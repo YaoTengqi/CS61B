@@ -14,6 +14,9 @@ public class IntListExercises {
             head.first += c;
             head = head.rest;
         }
+        /** edge process */
+        head.first += c;
+        head.rest = null;
     }
 
     /**
@@ -51,7 +54,7 @@ public class IntListExercises {
      */
     public static boolean firstDigitEqualsLastDigit(int x) {
         int lastDigit = x % 10;
-        while (x > 10) {
+        while (x >= 10) {
             x = x / 10;
         }
         int firstDigit = x % 10;
@@ -67,16 +70,17 @@ public class IntListExercises {
      */
     public static boolean squarePrimes(IntList lst) {
         // Base Case: we have reached the end of the list
+        boolean currElemIsPrime = false;
         if (lst == null) {
             return false;
+        }else {
+            currElemIsPrime = Primes.isPrime(lst.first);
+            if (currElemIsPrime) {
+                lst.first *= lst.first;
+            }
+            squarePrimes(lst.rest);
         }
 
-        boolean currElemIsPrime = Primes.isPrime(lst.first);
-
-        if (currElemIsPrime) {
-            lst.first *= lst.first;
-        }
-
-        return currElemIsPrime || squarePrimes(lst.rest);
+        return currElemIsPrime;
     }
 }
