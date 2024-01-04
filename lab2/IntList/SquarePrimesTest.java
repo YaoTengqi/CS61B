@@ -19,10 +19,18 @@ public class SquarePrimesTest {
     }
 
     @Test
-    public void testSquarePrimesSimple_Mine() {
+    public void testSquarePrimesSimple_Mine1() {
         IntList lst = IntList.of(3, 4, 5, 6, 7);
         boolean changed = IntListExercises.squarePrimes(lst);
         assertEquals("9 -> 4 -> 25 -> 6 -> 49", lst.toString());
+        assertTrue(changed);
+    }
+
+    @Test
+    public void testSquarePrimesSimple_Mine2() {
+        IntList lst = IntList.of(4, 5, 6, 7);
+        boolean changed = IntListExercises.squarePrimes(lst);
+        assertEquals("4 -> 25 -> 6 -> 49", lst.toString());
         assertTrue(changed);
     }
 }

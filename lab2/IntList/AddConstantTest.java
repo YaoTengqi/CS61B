@@ -20,6 +20,13 @@ public class AddConstantTest {
     }
 
     @Test
+    public void testAddConstantThree() {
+        IntList lst = IntList.of();
+        IntListExercises.addConstant(lst, 1);
+        assertNull(lst);
+    }
+
+    @Test
     public void testAddToLargeList() {
         IntList lst = IntList.of(1, 2, 3, 4, 5, 6, 7, 8, 9);
         IntListExercises.addConstant(lst, 10);
