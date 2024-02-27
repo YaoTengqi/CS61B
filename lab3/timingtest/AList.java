@@ -34,9 +34,8 @@ public class AList<Item> {
     /** Inserts X into the back of the list. */
     public void addLast(Item x) {
         if (size == items.length) {
-            resize(size + 1);
+            resize(size * 2); // resize策略改为乘法后几乎每次构造都是立即构造，花的时间很少
         }
-
         items[size] = x;
         size = size + 1;
     }
