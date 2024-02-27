@@ -25,6 +25,7 @@ public class TimeAList {
     }
 
     public static void timeAListConstruction() {
+        System.out.println("Timing table for addLast");
         Stopwatch sw = new Stopwatch();
         int size_power = 14;
         int AList_size = 1000;
