@@ -124,7 +124,7 @@ public class Model extends Observable {
     }
 
     /**
-     * Tilt the board toward SIDE. Return true iff this changes the board.
+     * Tilt the board toward SIDE. Return true if this changes the board.
      * <p>
      * 1. If two Tile objects are adjacent in the direction of motion and have
      * the same value, they are merged into one Tile of twice the original
@@ -137,18 +137,73 @@ public class Model extends Observable {
      * and the trailing tile does not.
      */
     public boolean tilt(Side side) {
+        board.setViewingPerspective(side); //先设置好方向
         boolean changed;
+        boolean temp_changed;
         changed = false;
-
+        temp_changed = false;
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
-
+        for (int i = 0; i < 4; i++) {
+            temp_changed = processColumn(side, i);
+            if (temp_changed) {
+                changed = temp_changed;
+            }
+        }
         checkGameOver();
         if (changed) {
             setChanged();
         }
+        board.setViewingPerspective(Side.NORTH); //return之前设置好正确方向(向NORTH)
         return changed;
+    }
+
+    /**
+     * Process a column of the board
+     *
+     * @param column
+     * @return moved
+     */
+    public boolean processColumn(Side s, int column) {
+        /**
+         * 记录是否发生merge合并，若合并则无法进行第二次合并
+         */
+        board.setViewingPerspective(s); //先设置好方向
+        boolean moved = false;
+        boolean changed = false;
+        int empty_idx = 3; // 记录空白格索引
+        int noMerge_idx = 3; // 记录无合并块索引
+        int noMerge_value = 0; // 记录无合并块的值
+
+        Tile t0 = board.tile(column, 3);
+        if (t0 != null) {
+            noMerge_value = t0.value();
+            empty_idx = empty_idx - 1;
+        }
+        for (int i = 2; i >= 0; i--) {
+            Tile t = board.tile(column, i);
+            if (t != null) {
+                if (t.value() == noMerge_value) {   //当有相同的值时进行合并
+                    changed = board.move(column, noMerge_idx, t);
+                    noMerge_idx = noMerge_idx - 1;
+                } else {    //否则就移动到空白位置
+                    changed = board.move(column, empty_idx, t);
+                }
+                if (changed) {
+                    score += t.value() * 2;
+                } else {
+                    noMerge_value = t.value();
+                    noMerge_idx = empty_idx;
+                    empty_idx = empty_idx - 1;
+                }
+                moved = true;
+            } else if (i > empty_idx) {
+                empty_idx = i;
+            }
+        }
+        board.setViewingPerspective(Side.NORTH);
+        return moved;
     }
 
     /**
@@ -208,31 +263,41 @@ public class Model extends Observable {
      */
     public static boolean atLeastOneMoveExists(Board b) {
         // TODO: Fill in this function.
+        boolean existsRow = false;
+        boolean existsCol = false;
+        existsRow = checkRow(b);
+        existsCol = checkCol(b);
+        return (existsRow || existsCol);
+    }
+
+    public static boolean checkRow(Board b) {
+        Tile flag_tile = b.tile(0, 0);
         for (int i = 0; i < b.size(); i++) {
             for (int j = 0; j < b.size(); j++) {
                 Tile _tile = b.tile(i, j);
-                if (_tile == null) {
+                if (_tile == null) { //存在空块
                     return true;
+                } else if (_tile.value() == flag_tile.value() && _tile != flag_tile && (_tile.col() == flag_tile.col() || _tile.row() == flag_tile.row())) { //存在邻近块的值相等
+                    return true;
+                } else {
+                    flag_tile = _tile;
                 }
-                if (j > 0) {
-                    Tile _tile_left = b.tile(i, j - 1);
-                    if (_tile.value() == _tile_left.value())
-                        return true;
-                }
-                if (j < b.size() - 1) {
-                    Tile _tile_right = b.tile(i, j + 1);
-                    if (_tile.value() == _tile_right.value())
-                        return true;
-                }
-                if (i > 0) {
-                    Tile _tile_up = b.tile(i - 1, j);
-                    if (_tile.value() == _tile_up.value())
-                        return true;
-                }
-                if (i < b.size() - 1) {
-                    Tile _tile_down = b.tile(i + 1, j);
-                    if (_tile.value() == _tile_down.value())
-                        return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean checkCol(Board b) {
+        Tile flag_tile = b.tile(0, 0);
+        for (int i = 0; i < b.size(); i++) {
+            for (int j = 0; j < b.size(); j++) {
+                Tile _tile = b.tile(j, i);
+                if (_tile == null) { //存在空块
+                    return true;
+                } else if (_tile.value() == flag_tile.value() && _tile != flag_tile && (_tile.col() == flag_tile.col() || _tile.row() == flag_tile.row())) { //存在邻近块的值相等
+                    return true;
+                } else {
+                    flag_tile = _tile;
                 }
             }
         }
@@ -241,8 +306,7 @@ public class Model extends Observable {
 
 
     @Override
-    /** Returns the model as a string, used for debugging. */
-    public String toString() {
+    /** Returns the model as a string, used for debugging. */ public String toString() {
         Formatter out = new Formatter();
         out.format("%n[%n");
         for (int row = size() - 1; row >= 0; row -= 1) {
@@ -261,8 +325,7 @@ public class Model extends Observable {
     }
 
     @Override
-    /** Returns whether two models are equal. */
-    public boolean equals(Object o) {
+    /** Returns whether two models are equal. */ public boolean equals(Object o) {
         if (o == null) {
             return false;
         } else if (getClass() != o.getClass()) {
@@ -273,8 +336,7 @@ public class Model extends Observable {
     }
 
     @Override
-    /** Returns hash code of Model’s string. */
-    public int hashCode() {
+    /** Returns hash code of Model’s string. */ public int hashCode() {
         return toString().hashCode();
     }
 }

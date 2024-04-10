@@ -1,0 +1,6 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Mon Mar 18 18:19:10 CST 2024
+junit-platform-commons-1.7.2.jar>central=
+junit-platform-commons-1.7.2-sources.jar>central=
+junit-platform-commons-1.7.2.pom>central=
+junit-platform-commons-1.7.2-javadoc.jar>central=

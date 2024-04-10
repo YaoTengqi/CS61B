@@ -1,0 +1,6 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Mon Mar 18 17:07:14 CST 2024
+xmlunit-core-2.8.3.jar>central=
+xmlunit-core-2.8.3-javadoc.jar>central=
+xmlunit-core-2.8.3.pom>central=
+xmlunit-core-2.8.3-sources.jar>central=
