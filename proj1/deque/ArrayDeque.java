@@ -62,7 +62,7 @@ public class ArrayDeque<T> implements Deque<T> {
     public T removeLast() {
         T result = null;
         if (last_sentinel == 0 && first_sentinel != size - 1) {
-            last_sentinel = first_sentinel;
+            last_sentinel = first_sentinel + 2;
         }
         if (last_sentinel != 0) {
             result = items[last_sentinel - 1];

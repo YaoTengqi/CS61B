@@ -88,4 +88,16 @@ public class MaxArrayDequeTest {
         int result = mad.removeFirst();
         assertEquals(9, result);
     }
+
+    @Test
+    public void removeTest() {
+        MaxArrayDeque<Integer> mad = new MaxArrayDeque<Integer>(c);
+        mad.addFirst(0);
+        mad.addFirst(1);
+        mad.addFirst(2);
+        mad.addFirst(3);
+        mad.addFirst(4);
+        int result = mad.removeLast();
+        assertEquals(4, result);
+    }
 }
