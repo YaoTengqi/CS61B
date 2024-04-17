@@ -155,37 +155,37 @@ public class LinkedListDeque<T> {
         return p.item;
     }
 
-//    public class LLDIterator implements Iterator<T> {
-//
-//        private LinkedListNode<T> current_node = sentinel.next;
-//
-//        @Override
-//        public boolean hasNext() {
-//            if (current_node.next != sentinel) {
-//                return true;
-//            } else {
-//                return false;
-//            }
-//        }
-//
-//        @Override
-//        public T next() {
-//            if (!hasNext()) {
-//                throw new NoSuchElementException();
-//            }
-//            T item = current_node.item;
-//            current_node = current_node.next;
-//            return item;
-//        }
-//    }
-//
-//    /**
-//     * The Deque objects we’ll make are iterable (i.e. Iterable<T>) so we must provide this method to return an iterator.
-//     *
-//     * @return
-//     */
-//    public Iterator<T> iterator() {
-//        return new LLDIterator();
-//
-//    }
+    public class LLDIterator implements Iterator<T> {
+
+        private LinkedListNode<T> current_node = sentinel.next;
+
+        @Override
+        public boolean hasNext() {
+            if (current_node.next != sentinel) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public T next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            T item = current_node.item;
+            current_node = current_node.next;
+            return item;
+        }
+    }
+
+    /**
+     * The Deque objects we’ll make are iterable (i.e. Iterable<T>) so we must provide this method to return an iterator.
+     *
+     * @return
+     */
+    public Iterator<T> iterator() {
+        return new LLDIterator();
+
+    }
 }
