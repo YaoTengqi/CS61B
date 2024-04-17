@@ -19,28 +19,34 @@ public class ArrayDeque<T> implements Deque<T> {
 
     @Override
     public void addFirst(T item) {
-        if (first_sentinel == last_sentinel - 1) {
+        if (first_sentinel == last_sentinel) {
             resize();
         }
         items[first_sentinel] = item;
         item_count = item_count + 1;
         first_sentinel = first_sentinel - 1;
-
     }
 
     @Override
     public void addLast(T item) {
-        if (first_sentinel == last_sentinel - 1) {
+        if (first_sentinel == last_sentinel) {
             resize();
         }
         items[last_sentinel] = item;
+        if (last_sentinel == size - 1) {
+            last_sentinel = 0;
+        } else {
+            last_sentinel = last_sentinel + 1;
+        }
         item_count = item_count + 1;
-        last_sentinel = last_sentinel + 1;
     }
 
     @Override
     public T removeFirst() {
         T result = null;
+        if (last_sentinel != 0 && first_sentinel == size - 1) {
+            first_sentinel = last_sentinel - 2;
+        }
         if (first_sentinel != size - 1) {
             result = items[first_sentinel + 1];
             if (result != null) {
@@ -55,6 +61,9 @@ public class ArrayDeque<T> implements Deque<T> {
     @Override
     public T removeLast() {
         T result = null;
+        if (last_sentinel == 0 && first_sentinel != size - 1) {
+            last_sentinel = first_sentinel;
+        }
         if (last_sentinel != 0) {
             result = items[last_sentinel - 1];
             if (result != null) {
