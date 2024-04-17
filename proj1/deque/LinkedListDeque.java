@@ -150,11 +150,10 @@ public class LinkedListDeque<T> implements Deque<T> {
         return result;
     }
 
-    public class LLDIterator implements Iterator<T> {
+    public class LLDIterator<T> {
 
         private LinkedListNode<T> current_node = sentinel.next;
 
-        @Override
         public boolean hasNext() {
             if (current_node.next != sentinel) {
                 return true;
@@ -163,7 +162,6 @@ public class LinkedListDeque<T> implements Deque<T> {
             }
         }
 
-        @Override
         public T next() {
             if (!hasNext()) {
                 throw new NoSuchElementException();
@@ -180,7 +178,6 @@ public class LinkedListDeque<T> implements Deque<T> {
      * @return
      */
     public Iterator<T> iterator() {
-        return new LLDIterator();
-
+        return (Iterator<T>) new LLDIterator();
     }
 }

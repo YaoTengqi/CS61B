@@ -4,10 +4,10 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public class ArrayDeque<T> implements Deque<T> {
-    public int size = 0;
-    public int item_count;
-    public int first_sentinel = 0;
-    public int last_sentinel = 1;
+    private int size = 0;
+    private int item_count;
+    private int first_sentinel = 0;
+    private int last_sentinel = 1;
     public T items[];
 
     public ArrayDeque() {
@@ -45,7 +45,7 @@ public class ArrayDeque<T> implements Deque<T> {
     public T removeFirst() {
         T result = null;
         if (last_sentinel != 0 && first_sentinel == size - 1) {
-            first_sentinel = last_sentinel - 2;
+            first_sentinel = -1;
         }
         if (first_sentinel != size - 1) {
             result = items[first_sentinel + 1];
@@ -62,7 +62,7 @@ public class ArrayDeque<T> implements Deque<T> {
     public T removeLast() {
         T result = null;
         if (last_sentinel == 0 && first_sentinel != size - 1) {
-            last_sentinel = first_sentinel + 2;
+            last_sentinel = size;
         }
         if (last_sentinel != 0) {
             result = items[last_sentinel - 1];
@@ -111,8 +111,7 @@ public class ArrayDeque<T> implements Deque<T> {
         first_sentinel = size - first_sentinel_offset;
     }
 
-    public class ADequeIterator implements Iterator<T> {
-        @Override
+    public class ADequeIterator {
         public boolean hasNext() {
             if (item_count != 0) {
                 return true;
@@ -120,7 +119,6 @@ public class ArrayDeque<T> implements Deque<T> {
             return false;
         }
 
-        @Override
         public T next() {
             T result = null;
             if (!hasNext()) {
