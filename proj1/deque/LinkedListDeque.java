@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class LinkedListDeque<T> {
+public class LinkedListDeque<T> implements Deque<T> {
     private static class LinkedListNode<T> {
         public LinkedListNode prev; //前指针
         public T item; //Deque的值
@@ -118,12 +118,6 @@ public class LinkedListDeque<T> {
      * @return size
      */
     public int size() {
-//        int size = 0;
-//        LinkedListNode p = sentinel;
-//        while (p.next != sentinel) {
-//            size = size + 1;
-//            p = p.next;
-//        }
         return size;
     }
 
@@ -134,7 +128,7 @@ public class LinkedListDeque<T> {
         LinkedListNode p = sentinel.next;
         int size = this.size();
         for (int i = 0; i < size; i++) {
-            System.out.print(p.item + " ");
+            System.out.println(p.item);
             p = p.next;
         }
         System.out.println();
@@ -146,13 +140,14 @@ public class LinkedListDeque<T> {
      * @param i
      * @return
      */
-    public Object get(int i) {
+    public T get(int i) {
         LinkedListNode p = sentinel;
+        T result = (T) p.item;
         while (i > 0) {
             p = p.next;
             i = i - 1;
         }
-        return p.item;
+        return result;
     }
 
     public class LLDIterator implements Iterator<T> {
