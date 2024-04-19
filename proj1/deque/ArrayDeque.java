@@ -57,10 +57,6 @@ public class ArrayDeque<T> implements Deque<T> {
                 items[first_sentinel] = null;
             }
         }
-        if (item_count == 0) {
-            first_sentinel = size - 1;
-            last_sentinel = 0;
-        }
         return result;
     }
 
@@ -77,10 +73,6 @@ public class ArrayDeque<T> implements Deque<T> {
                 item_count = item_count - 1;
                 items[last_sentinel] = null;
             }
-        }
-        if (item_count == 0) {
-            first_sentinel = size - 1;
-            last_sentinel = 0;
         }
         return result;
     }
@@ -107,8 +99,12 @@ public class ArrayDeque<T> implements Deque<T> {
     }
 
     @Override
-    public T get(int i) {
-        return items[i];
+    public T get(int index) {
+        int mapped_index = first_sentinel + index + 1;
+        if (mapped_index > size - 1) {
+            mapped_index = mapped_index - size;
+        }
+        return items[mapped_index];
     }
 
     public void resize() {

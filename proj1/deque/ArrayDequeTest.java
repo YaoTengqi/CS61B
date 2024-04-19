@@ -38,6 +38,17 @@ public class ArrayDequeTest {
     }
 
     @Test
+    public void getTest() {
+        ArrayDeque<Integer> ad = new ArrayDeque<Integer>();
+        ad.addFirst(0);
+        ad.addLast(1);
+        int result = ad.get(1);
+        assertEquals(1, result);
+
+    }
+
+
+    @Test
     /** Adds an item, then removes an item, and ensures that dll is empty afterwards. */
     public void addRemoveTest() {
 
