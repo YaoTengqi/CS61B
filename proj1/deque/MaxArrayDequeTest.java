@@ -99,4 +99,14 @@ public class MaxArrayDequeTest {
         assertEquals(1, result);
     }
 
+    @Test
+    public void getTest() {
+        MaxArrayDeque<Integer> mad = new MaxArrayDeque<Integer>(c);
+        mad.addLast(0);
+        mad.removeFirst();
+        mad.addLast(2);
+        int result = mad.get(0);
+        assertEquals(2, result);
+    }
+
 }

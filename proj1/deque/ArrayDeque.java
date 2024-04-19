@@ -6,8 +6,8 @@ import java.util.NoSuchElementException;
 public class ArrayDeque<T> implements Deque<T> {
     private int size = 0;
     private int item_count;
-    private int first_sentinel = 0;
-    private int last_sentinel = 1;
+    private int first_sentinel = size - 1;
+    private int last_sentinel = 0;
     public T items[];
 
     public ArrayDeque() {
@@ -57,6 +57,10 @@ public class ArrayDeque<T> implements Deque<T> {
                 items[first_sentinel] = null;
             }
         }
+        if (item_count == 0) {
+            first_sentinel = size - 1;
+            last_sentinel = 0;
+        }
         return result;
     }
 
@@ -73,6 +77,10 @@ public class ArrayDeque<T> implements Deque<T> {
                 item_count = item_count - 1;
                 items[last_sentinel] = null;
             }
+        }
+        if (item_count == 0) {
+            first_sentinel = size - 1;
+            last_sentinel = 0;
         }
         return result;
     }
