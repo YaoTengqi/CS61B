@@ -37,6 +37,8 @@ public class LinkedListDequeTest {
 
         System.out.println("Printing out deque: ");
         lld1.printDeque();
+        String result = lld1.get(3);
+        assertEquals("back", lld1.getRecursive(3));
 
     }
 

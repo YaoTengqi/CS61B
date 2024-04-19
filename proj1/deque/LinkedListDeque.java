@@ -145,6 +145,7 @@ public class LinkedListDeque<T> implements Deque<T> {
         while (i > 0) {
             p = p.next;
             i = i - 1;
+            result = (T) p.item;
         }
         return result;
     }
@@ -178,5 +179,21 @@ public class LinkedListDeque<T> implements Deque<T> {
      */
     public Iterator<T> iterator() {
         return new LLDIterator();
+    }
+
+    public T getRecursive(int index) {
+        LinkedListNode p = sentinel;
+        return getRecursiveHelper(index, p);
+    }
+
+    public T getRecursiveHelper(int index, LinkedListNode p) {
+        if (p == null) {
+            return null;
+        }
+        if (index == 0) {
+            return (T) p.item;
+        } else {
+            return getRecursiveHelper(index - 1, p.next);
+        }
     }
 }
