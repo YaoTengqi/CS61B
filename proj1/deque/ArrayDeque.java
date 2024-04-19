@@ -21,6 +21,8 @@ public class ArrayDeque<T> implements Deque<T> {
     public void addFirst(T item) {
         if (first_sentinel == last_sentinel) {
             resize();
+        } else if (first_sentinel == -1) {
+            first_sentinel = size - 1;
         }
         items[first_sentinel] = item;
         item_count = item_count + 1;
@@ -105,7 +107,12 @@ public class ArrayDeque<T> implements Deque<T> {
         int new_size = size * 2;
         int first_sentinel_offset = size - first_sentinel;
         T new_items[] = (T[]) new Object[new_size];
-        System.arraycopy(items, 0, new_items, 0, size);
+        if (first_sentinel > last_sentinel) {
+            System.arraycopy(items, 0, new_items, 0, last_sentinel);
+            System.arraycopy(items, first_sentinel, new_items, first_sentinel, (size - first_sentinel));
+        }else{
+
+        }
         size = new_size;
         items = new_items;
         first_sentinel = size - first_sentinel_offset;

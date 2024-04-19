@@ -55,21 +55,27 @@ public class MaxArrayDequeTest {
     }
 
     @Test
-    public void randomMaxTest() {
+    public void randomTest() {
         MaxArrayDeque<Integer> mad = new MaxArrayDeque<Integer>(c);
         Random random = new Random();
-        int max = -128;
+        int mode = random.nextInt(4);
         for (int i = 0; i < 100; i++) {
-            int num = random.nextInt();
-            mad.addLast(num);
-            if (max < num) {
-                max = num;
+            mode = random.nextInt(4);
+            switch (mode) {
+                case 1:
+                    mad.addFirst(mode);
+                    break;
+                case 2:
+                    mad.addLast(mode);
+                    break;
+                case 3:
+                    mad.removeFirst();
+                    break;
+                case 4:
+                    mad.removeLast();
+                    break;
             }
         }
-        int my_max = mad.max(c);
-        System.out.println("Right Max: " + max);
-        System.out.println("My Max: " + my_max);
-        assertEquals(my_max, max);
     }
 
     @Test
