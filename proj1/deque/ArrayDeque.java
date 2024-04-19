@@ -107,11 +107,11 @@ public class ArrayDeque<T> implements Deque<T> {
         int new_size = size * 2;
         int first_sentinel_offset = size - first_sentinel;
         T new_items[] = (T[]) new Object[new_size];
-        if (first_sentinel > last_sentinel) {
+        if (first_sentinel >= last_sentinel) {
             System.arraycopy(items, 0, new_items, 0, last_sentinel);
-            System.arraycopy(items, first_sentinel, new_items, first_sentinel, (size - first_sentinel));
-        }else{
-
+            System.arraycopy(items, first_sentinel, new_items, new_size - first_sentinel_offset, (size - first_sentinel));
+        } else {
+            System.arraycopy(items, first_sentinel, new_items, last_sentinel, (last_sentinel - first_sentinel));
         }
         size = new_size;
         items = new_items;
