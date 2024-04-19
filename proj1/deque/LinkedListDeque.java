@@ -150,7 +150,7 @@ public class LinkedListDeque<T> implements Deque<T> {
         return result;
     }
 
-    public class LLDIterator<T> {
+    public class LLDIterator implements Iterator<T> {
 
         private LinkedListNode<T> current_node = sentinel.next;
 
@@ -178,6 +178,6 @@ public class LinkedListDeque<T> implements Deque<T> {
      * @return
      */
     public Iterator<T> iterator() {
-        return (Iterator<T>) new LLDIterator();
+        return new LLDIterator();
     }
 }
