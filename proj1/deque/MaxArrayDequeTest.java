@@ -102,26 +102,29 @@ public class MaxArrayDequeTest {
     @Test
     public void getTest() {
         MaxArrayDeque<Integer> mad = new MaxArrayDeque<Integer>(c);
-        int result;
+        int result = 0;
         mad.addLast(0);
-        result = mad.removeLast();
-        assertEquals(0, result);
+        mad.removeFirst();
         mad.addFirst(2);
-        result = mad.removeFirst();
-        assertEquals(2, result);
-        mad.addLast(4);
-        result = mad.removeLast();
-        assertEquals(4, result);
-        mad.addFirst(6);
-        result = mad.removeLast();
-        assertEquals(6, result);
-        mad.addLast(8);
+        mad.get(0);
+        mad.removeFirst();
+        mad.addLast(5);
+        mad.removeFirst();
+        mad.addFirst(7);
+        mad.removeFirst();
         mad.addLast(9);
-        mad.addLast(10);
-        mad.addFirst(11);
+        mad.get(0);
+        mad.addLast(11);
         mad.addLast(12);
-        result = mad.get(4);
-        assertEquals(12, result);
+        mad.addLast(13);
+        mad.get(1);
+        mad.addFirst(15);
+        mad.addFirst(16);
+        mad.addLast(17);
+        mad.get(2);
+        mad.addLast(19);
+        mad.addFirst(20);
+        result = mad.removeLast();
+        assertEquals(19, result);
     }
-
 }

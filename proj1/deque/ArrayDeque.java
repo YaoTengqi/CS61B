@@ -21,12 +21,13 @@ public class ArrayDeque<T> implements Deque<T> {
     public void addFirst(T item) {
         if (firstSentinel == lastSentinel) {
             resize();
-        } else if (firstSentinel == -1) {
-            firstSentinel = size - 1;
         }
         items[firstSentinel] = item;
         itemCount = itemCount + 1;
         firstSentinel = firstSentinel - 1;
+        if (firstSentinel == -1) {
+            firstSentinel = size - 1;
+        }
     }
 
     @Override
