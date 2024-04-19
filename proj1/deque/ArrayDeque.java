@@ -142,7 +142,7 @@ public class ArrayDeque<T> implements Deque<T> {
         }
     }
 
-    public T iterator() {
-        return (T) new ADequeIterator();
+    public Iterator<T> iterator() {
+        return new ADequeIterator();
     }
 }
