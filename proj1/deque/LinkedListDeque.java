@@ -1,16 +1,15 @@
 package deque;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 public class LinkedListDeque<T> implements Deque<T> {
     private static class LinkedListNode<T> {
-        public LinkedListNode prev; //前指针
-        public T item; //Deque的值
-        public LinkedListNode next; //后指针
+        private LinkedListNode prev; //前指针
+        private T item; //Deque的值
+        private LinkedListNode next; //后指针
 
-        public LinkedListNode(LinkedListNode p, T i, LinkedListNode n) {
+        private LinkedListNode(LinkedListNode p, T i, LinkedListNode n) {
             prev = p;
             item = i;
             next = n;
@@ -35,9 +34,9 @@ public class LinkedListDeque<T> implements Deque<T> {
      * @param item
      */
     public void addFirst(T item) {
-        LinkedListNode new_node = new LinkedListNode(sentinel, item, sentinel.next);
-        sentinel.next = new_node;
-        sentinel.prev = new_node;
+        LinkedListNode newNode = new LinkedListNode(sentinel, item, sentinel.next);
+        sentinel.next = newNode;
+        sentinel.prev = newNode;
         size = size + 1;
     }
 
@@ -47,10 +46,10 @@ public class LinkedListDeque<T> implements Deque<T> {
      * @param item
      */
     public void addLast(T item) {
-        LinkedListNode end_node = sentinel.prev;
-        LinkedListNode new_node = new LinkedListNode(end_node, item, sentinel);
-        end_node.next = new_node;
-        sentinel.prev = new_node;
+        LinkedListNode endNode = sentinel.prev;
+        LinkedListNode newNode = new LinkedListNode(endNode, item, sentinel);
+        endNode.next = newNode;
+        sentinel.prev = newNode;
         size = size + 1;
     }
 
@@ -60,20 +59,20 @@ public class LinkedListDeque<T> implements Deque<T> {
      * @return
      */
     public T removeFirst() {
-        LinkedListNode<T> remove_node = sentinel.next;
-        if (remove_node == sentinel) {
+        LinkedListNode<T> removeNode = sentinel.next;
+        if (removeNode == sentinel) {
             return null;
         } else if (size == 1) {
             size = size - 1;
             sentinel.next = sentinel;
             sentinel.prev = sentinel;
-            return remove_node.item;
+            return removeNode.item;
         } else {
             size = size - 1;
             sentinel.next.next.prev = sentinel;
             sentinel.next = sentinel.next.next;
         }
-        return remove_node.item;
+        return removeNode.item;
     }
 
     /**
