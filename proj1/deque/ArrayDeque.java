@@ -118,7 +118,7 @@ public class ArrayDeque<T> implements Deque<T> {
         first_sentinel = size - first_sentinel_offset;
     }
 
-    public class ADequeIterator {
+    public class ADequeIterator implements Iterator<T> {
         public boolean hasNext() {
             if (item_count != 0) {
                 return true;
@@ -140,5 +140,9 @@ public class ArrayDeque<T> implements Deque<T> {
             }
             return result;
         }
+    }
+
+    public T iterator() {
+        return (T) new ADequeIterator();
     }
 }
