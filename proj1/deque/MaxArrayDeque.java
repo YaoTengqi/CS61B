@@ -30,7 +30,7 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> {
             return null;
         } else {
             for (int i = 0; i < this.size(); i++) {
-                if (this.items[i] != null && comparator.compare(this.items[i], max) > 0) {
+                if (this.items[i] != null && c.compare(this.items[i], max) > 0) {
                     max = this.items[i];
                 }
             }
