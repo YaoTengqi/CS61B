@@ -21,5 +21,5 @@ public interface Deque<T> {
 
     boolean equals(Object o);
 
-    public Iterator<T> iterator();
+    Iterator<T> iterator();
 }
