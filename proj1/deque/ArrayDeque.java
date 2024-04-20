@@ -58,7 +58,7 @@ public class ArrayDeque<T> implements Deque<T> {
                 items[firstSentinel] = null;
             }
         }
-        if (itemCount < size / 2 && size > 8) { // memory usage control
+        if (itemCount < size / 2 && size > 16) { // memory usage control
             resizeShrink();
         }
         return result;
@@ -78,7 +78,7 @@ public class ArrayDeque<T> implements Deque<T> {
                 items[lastSentinel] = null;
             }
         }
-        if (itemCount < size / 2 && size > 8) { // memory usage control
+        if (itemCount < size / 2 && size > 16) { // memory usage control
             resizeShrink();
         }
         return result;
@@ -128,7 +128,7 @@ public class ArrayDeque<T> implements Deque<T> {
         items = newItems;
         firstSentinel = size - first_sentinel_offset;
         if (lastSentinel > size) {
-            lastSentinel = size - 1;
+            lastSentinel = size;
         }
     }
 
@@ -148,7 +148,7 @@ public class ArrayDeque<T> implements Deque<T> {
         items = newItems;
         firstSentinel = size - first_sentinel_offset;
         if (lastSentinel > size) {
-            lastSentinel = size - 1;
+            lastSentinel = size;
         }
     }
 
