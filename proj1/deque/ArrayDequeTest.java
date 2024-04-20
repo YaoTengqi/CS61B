@@ -167,4 +167,39 @@ public class ArrayDequeTest {
         lld2.addFirst(2);
         assertEquals(true, lld1.equals(lld2));
     }
+
+    @Test
+    public void sizeShrinkTest() {
+        ArrayDeque<Integer> ad = new ArrayDeque<Integer>();
+        ad.addFirst(1);
+        ad.addLast(2);
+        ad.addFirst(1);
+        ad.addLast(2);
+        ad.addLast(1);
+        ad.addFirst(2);
+        ad.addLast(1);
+        ad.addFirst(2);
+        ad.addLast(1);
+        ad.addFirst(2);
+        ad.addLast(1);
+        ad.addFirst(2);
+        ad.addLast(1);
+        ad.addFirst(2);
+        ad.addLast(1);
+        ad.addFirst(2);
+        ad.removeFirst();
+        ad.removeLast();
+        ad.removeFirst();
+        ad.removeLast();
+        ad.removeFirst();
+        ad.removeLast();
+        ad.removeFirst();
+        ad.removeLast();
+        ad.removeFirst();
+        ad.removeLast();
+        ad.removeFirst();
+        ad.removeLast();
+        ad.removeFirst();
+        ad.removeLast();
+    }
 }

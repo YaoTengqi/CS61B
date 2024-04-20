@@ -20,7 +20,7 @@ public class ArrayDeque<T> implements Deque<T> {
     @Override
     public void addFirst(T item) {
         if (firstSentinel == lastSentinel) {
-            resize();
+            resizeAdd();
         }
         items[firstSentinel] = item;
         itemCount = itemCount + 1;
@@ -33,7 +33,7 @@ public class ArrayDeque<T> implements Deque<T> {
     @Override
     public void addLast(T item) {
         if (firstSentinel == lastSentinel) {
-            resize();
+            resizeAdd();
         }
         items[lastSentinel] = item;
         if (lastSentinel == size - 1) {
@@ -58,6 +58,9 @@ public class ArrayDeque<T> implements Deque<T> {
                 items[firstSentinel] = null;
             }
         }
+        if (itemCount < size / 2 && size > 8) { // memory usage control
+            resizeShrink();
+        }
         return result;
     }
 
@@ -74,6 +77,9 @@ public class ArrayDeque<T> implements Deque<T> {
                 itemCount = itemCount - 1;
                 items[lastSentinel] = null;
             }
+        }
+        if (itemCount < size / 2 && size > 8) { // memory usage control
+            resizeShrink();
         }
         return result;
     }
@@ -108,7 +114,7 @@ public class ArrayDeque<T> implements Deque<T> {
         return items[mapped_index];
     }
 
-    public void resize() {
+    public void resizeAdd() {
         int newSize = size * 2;
         int first_sentinel_offset = size - firstSentinel;
         T newItems[] = (T[]) new Object[newSize];
@@ -117,6 +123,21 @@ public class ArrayDeque<T> implements Deque<T> {
             System.arraycopy(items, firstSentinel, newItems, newSize - first_sentinel_offset, (size - firstSentinel));
         } else {
             System.arraycopy(items, firstSentinel, newItems, lastSentinel, (lastSentinel - firstSentinel));
+        }
+        size = newSize;
+        items = newItems;
+        firstSentinel = size - first_sentinel_offset;
+    }
+
+    public void resizeShrink() {
+        int newSize = size / 2;
+        int first_sentinel_offset = size - firstSentinel;
+        T newItems[] = (T[]) new Object[newSize];
+        if (firstSentinel >= lastSentinel) {
+            System.arraycopy(items, 0, newItems, 0, lastSentinel);
+            System.arraycopy(items, firstSentinel, newItems, newSize - first_sentinel_offset, (size - firstSentinel));
+        } else {
+            System.arraycopy(items, firstSentinel, newItems, 0, (lastSentinel - firstSentinel));
         }
         size = newSize;
         items = newItems;
