@@ -157,9 +157,10 @@ public class ArrayDeque<T> implements Deque<T> {
 
         public boolean hasNext() {
 
-            if ((firstSentinel > lastSentinel && currentIndex > firstSentinel)
+            if (((firstSentinel > lastSentinel && currentIndex > firstSentinel)
                     || (firstSentinel > lastSentinel && currentIndex < lastSentinel)
-                    || (firstSentinel < lastSentinel && currentIndex > firstSentinel && currentIndex < lastSentinel)) {
+                    || (firstSentinel < lastSentinel && currentIndex > firstSentinel && currentIndex < lastSentinel))
+                    && (currentIndex < size && currentIndex > -1)) {
                 return true;
             }
             return false;
