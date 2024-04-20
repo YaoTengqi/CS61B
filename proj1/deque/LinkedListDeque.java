@@ -3,7 +3,7 @@ package deque;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class LinkedListDeque<T> implements Deque<T> {
+public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
     private static class LinkedListNode<T> {
         private LinkedListNode prev; //前指针
         private T item; //Deque的值
@@ -189,8 +189,9 @@ public class LinkedListDeque<T> implements Deque<T> {
      *
      * @return
      */
+    @Override
     public Iterator<T> iterator() {
-        return new LLDIterator();
+        return (Iterator<T>) new LLDIterator();
     }
 
     public T getRecursive(int index) {

@@ -3,7 +3,7 @@ package deque;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class ArrayDeque<T> implements Deque<T> {
+public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     private int size = 0;
     private int itemCount;
     private int firstSentinel = size - 1;
@@ -114,7 +114,7 @@ public class ArrayDeque<T> implements Deque<T> {
         return items[mapped_index];
     }
 
-    public void resizeAdd() {
+    private void resizeAdd() {
         int newSize = size * 2;
         int first_sentinel_offset = size - firstSentinel;
         T newItems[] = (T[]) new Object[newSize];
@@ -132,7 +132,7 @@ public class ArrayDeque<T> implements Deque<T> {
         }
     }
 
-    public void resizeShrink() {
+    private void resizeShrink() {
         int newSize = size / 2;
         T newItems[] = (T[]) new Object[newSize];
         int first_sentinel_offset = 0;
@@ -180,8 +180,9 @@ public class ArrayDeque<T> implements Deque<T> {
         }
     }
 
+    @Override
     public Iterator<T> iterator() {
-        return new ADequeIterator();
+        return (Iterator<T>) new ADequeIterator();
     }
 
     public boolean equals(Object o) {
