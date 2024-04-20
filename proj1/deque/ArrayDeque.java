@@ -8,7 +8,7 @@ public class ArrayDeque<T> implements Deque<T> {
     private int itemCount;
     private int firstSentinel = size - 1;
     private int lastSentinel = 0;
-    public T items[];
+    private T items[];
 
     public ArrayDeque() {
         items = (T[]) new Object[8];
