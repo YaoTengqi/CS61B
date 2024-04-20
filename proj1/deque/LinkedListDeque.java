@@ -137,8 +137,8 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
      */
     public void printDeque() {
         LinkedListNode p = sentinel.next;
-        int size = this.size();
-        for (int i = 0; i < size; i++) {
+        int dequeSize = this.size();
+        for (int i = 0; i < dequeSize; i++) {
             System.out.println(p.item);
             p = p.next;
         }
@@ -164,10 +164,10 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
 
     private class LLDIterator implements Iterator<T> {
 
-        private LinkedListNode<T> current_node = sentinel;
+        private LinkedListNode<T> currentNode = sentinel;
 
         public boolean hasNext() {
-            if (current_node.next != sentinel) {
+            if (currentNode.next != sentinel) {
                 return true;
             } else {
                 return false;
@@ -178,8 +178,8 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
-            current_node = current_node.next;
-            T item = current_node.item;
+            currentNode = currentNode.next;
+            T item = currentNode.item;
             return item;
         }
     }

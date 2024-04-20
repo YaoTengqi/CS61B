@@ -50,7 +50,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         if (lastSentinel != 0 && firstSentinel == size - 1) {
             firstSentinel = -1;
         }
-        if (firstSentinel != size - 1) {
+        if (firstSentinel != size - 1 && firstSentinel > -2 && firstSentinel < size) {
             result = items[firstSentinel + 1];
             if (result != null) {
                 firstSentinel = firstSentinel + 1;
@@ -70,7 +70,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         if (lastSentinel == 0 && firstSentinel != size - 1) {
             lastSentinel = size;
         }
-        if (lastSentinel != 0) {
+        if (lastSentinel != 0 && lastSentinel > 0 && lastSentinel <= size) {
             result = items[lastSentinel - 1];
             if (result != null) {
                 lastSentinel = lastSentinel - 1;
@@ -107,11 +107,11 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
 
     @Override
     public T get(int index) {
-        int mapped_index = firstSentinel + index + 1;
-        if (mapped_index > size - 1) {
-            mapped_index = mapped_index - size;
+        int mappedIndex = firstSentinel + index + 1;
+        if (mappedIndex > size - 1) {
+            mappedIndex = mappedIndex - size;
         }
-        return items[mapped_index];
+        return items[mappedIndex];
     }
 
     private void resizeAdd() {
