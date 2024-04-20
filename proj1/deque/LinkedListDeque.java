@@ -213,7 +213,7 @@ public class LinkedListDeque<T> implements Deque<T> {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof Deque)) {
+        if (!(o instanceof LinkedListDeque)) {
             return false;
         }
 
@@ -228,7 +228,7 @@ public class LinkedListDeque<T> implements Deque<T> {
         while (thisIterator.hasNext()) {
             T thisItem = thisIterator.next();
             T otherItem = otherIterator.next();
-            if (thisItem != otherItem) {
+            if (thisItem.equals(otherItem)) {
                 return false;
             }
         }
