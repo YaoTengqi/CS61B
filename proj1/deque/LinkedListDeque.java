@@ -228,7 +228,7 @@ public class LinkedListDeque<T> implements Deque<T> {
         while (thisIterator.hasNext()) {
             T thisItem = thisIterator.next();
             T otherItem = otherIterator.next();
-            if (thisItem.equals(otherItem)) {
+            if (thisItem != null && otherItem != null && thisItem != otherItem) {
                 return false;
             }
         }

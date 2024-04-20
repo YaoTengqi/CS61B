@@ -127,21 +127,29 @@ public class ArrayDeque<T> implements Deque<T> {
         size = newSize;
         items = newItems;
         firstSentinel = size - first_sentinel_offset;
+        if (lastSentinel > size) {
+            lastSentinel = size - 1;
+        }
     }
 
     public void resizeShrink() {
         int newSize = size / 2;
-        int first_sentinel_offset = size - firstSentinel;
         T newItems[] = (T[]) new Object[newSize];
+        int first_sentinel_offset = 0;
         if (firstSentinel >= lastSentinel) {
+            first_sentinel_offset = size - firstSentinel;
             System.arraycopy(items, 0, newItems, 0, lastSentinel);
             System.arraycopy(items, firstSentinel, newItems, newSize - first_sentinel_offset, (size - firstSentinel));
         } else {
+            first_sentinel_offset = lastSentinel - firstSentinel;
             System.arraycopy(items, firstSentinel, newItems, 0, (lastSentinel - firstSentinel));
         }
         size = newSize;
         items = newItems;
         firstSentinel = size - first_sentinel_offset;
+        if (lastSentinel > size) {
+            lastSentinel = size - 1;
+        }
     }
 
     public class ADequeIterator implements Iterator<T> {
@@ -194,7 +202,7 @@ public class ArrayDeque<T> implements Deque<T> {
         while (thisIterator.hasNext()) {
             T thisItem = thisIterator.next();
             T otherItem = otherIterator.next();
-            if (thisItem.equals(otherItem)) {
+            if (thisItem != null && otherItem != null && thisItem != otherItem) {
                 return false;
             }
         }
