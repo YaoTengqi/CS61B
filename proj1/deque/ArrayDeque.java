@@ -124,8 +124,10 @@ public class ArrayDeque<T> implements Deque<T> {
     }
 
     public class ADequeIterator implements Iterator<T> {
+        int iteratorCount = -1;
+
         public boolean hasNext() {
-            if (itemCount != 0) {
+            if (iteratorCount != itemCount) {
                 return true;
             }
             return false;
@@ -143,11 +145,38 @@ public class ArrayDeque<T> implements Deque<T> {
                 result = items[lastSentinel];
                 lastSentinel = lastSentinel - 1;
             }
+            iteratorCount = iteratorCount + 1;
             return result;
         }
     }
 
     public Iterator<T> iterator() {
         return new ADequeIterator();
+    }
+
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Deque)) {
+            return false;
+        }
+
+        ArrayDeque<T> other = (ArrayDeque<T>) o;
+
+        if (itemCount != other.size()) {
+            return false;
+        }
+
+        Iterator<T> thisIterator = this.iterator();
+        Iterator<T> otherIterator = other.iterator();
+        while (thisIterator.hasNext()) {
+            T thisItem = thisIterator.next();
+            T otherItem = otherIterator.next();
+            if (thisItem != otherItem) {
+                return false;
+            }
+        }
+        return true;
     }
 }

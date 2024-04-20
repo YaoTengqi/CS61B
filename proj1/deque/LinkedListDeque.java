@@ -35,8 +35,12 @@ public class LinkedListDeque<T> implements Deque<T> {
      */
     public void addFirst(T item) {
         LinkedListNode newNode = new LinkedListNode(sentinel, item, sentinel.next);
+        sentinel.next.prev = newNode;
         sentinel.next = newNode;
-        sentinel.prev = newNode;
+        if (size == 0) {
+            sentinel.prev = newNode;
+        }
+
         size = size + 1;
     }
 
@@ -66,12 +70,16 @@ public class LinkedListDeque<T> implements Deque<T> {
             size = size - 1;
             sentinel.next = sentinel;
             sentinel.prev = sentinel;
+            removeNode.prev = null; // save memory usage
+            removeNode.next = null; // save memory usage
             return removeNode.item;
         } else {
             size = size - 1;
             sentinel.next.next.prev = sentinel;
             sentinel.next = sentinel.next.next;
         }
+        removeNode.prev = null; // save memory usage
+        removeNode.next = null; // save memory usage
         return removeNode.item;
     }
 
@@ -81,20 +89,24 @@ public class LinkedListDeque<T> implements Deque<T> {
      * @return
      */
     public T removeLast() {
-        LinkedListNode<T> remove_node = sentinel.prev;
-        if (remove_node == sentinel) {
+        LinkedListNode<T> removeNode = sentinel.prev;
+        if (removeNode == sentinel) {
             return null;
         } else if (size == 1) {
             size = size - 1;
             sentinel.next = sentinel;
             sentinel.prev = sentinel;
-            return remove_node.item;
+            removeNode.prev = null; // save memory usage
+            removeNode.next = null; // save memory usage
+            return removeNode.item;
         } else {
             size = size - 1;
             sentinel.prev = sentinel.prev.prev;
             sentinel.prev.next = sentinel;
         }
-        return remove_node.item;
+        removeNode.prev = null; // save memory usage
+        removeNode.next = null; // save memory usage
+        return removeNode.item;
     }
 
 
@@ -140,7 +152,7 @@ public class LinkedListDeque<T> implements Deque<T> {
      * @return
      */
     public T get(int i) {
-        LinkedListNode p = sentinel;
+        LinkedListNode p = sentinel.next;
         T result = (T) p.item;
         while (i > 0) {
             p = p.next;
@@ -152,7 +164,7 @@ public class LinkedListDeque<T> implements Deque<T> {
 
     public class LLDIterator implements Iterator<T> {
 
-        private LinkedListNode<T> current_node = sentinel.next;
+        private LinkedListNode<T> current_node = sentinel;
 
         public boolean hasNext() {
             if (current_node.next != sentinel) {
@@ -195,5 +207,31 @@ public class LinkedListDeque<T> implements Deque<T> {
         } else {
             return getRecursiveHelper(index - 1, p.next);
         }
+    }
+
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Deque)) {
+            return false;
+        }
+
+        LinkedListDeque<T> other = (LinkedListDeque<T>) o;
+
+        if (size != other.size()) {
+            return false;
+        }
+
+        Iterator<T> thisIterator = this.iterator();
+        Iterator<T> otherIterator = other.iterator();
+        while (thisIterator.hasNext()) {
+            T thisItem = thisIterator.next();
+            T otherItem = otherIterator.next();
+            if (thisItem != otherItem) {
+                return false;
+            }
+        }
+        return true;
     }
 }
