@@ -19,7 +19,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
 
     @Override
     public void addFirst(T item) {
-        if (firstSentinel == lastSentinel) {
+        if (firstSentinel == lastSentinel || itemCount >= size) {
             resizeAdd();
         }
         items[firstSentinel] = item;
@@ -32,7 +32,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
 
     @Override
     public void addLast(T item) {
-        if (firstSentinel == lastSentinel) {
+        if (firstSentinel == lastSentinel || itemCount >= size) {
             resizeAdd();
         }
         items[lastSentinel] = item;
