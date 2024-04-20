@@ -159,17 +159,17 @@ public class ArrayDequeTest {
 
     @Test
     public void equalTest() {
-        ArrayDeque<Integer> lld1 = new ArrayDeque<Integer>();
-        ArrayDeque<Integer> lld2 = new ArrayDeque<Integer>();
-        lld1.addFirst(1);
-        lld1.addFirst(2);
-        lld1.addLast(2);
-        lld1.addLast(3);
-        lld2.addFirst(1);
-        lld2.addFirst(2);
-        lld2.addLast(2);
-        lld2.addLast(3);
-        assertEquals(true, lld1.equals(lld2));
+        ArrayDeque<Integer> lld = new ArrayDeque<Integer>();
+        LinkedListDeque<Integer> ad = new LinkedListDeque<Integer>();
+        lld.addFirst(1);
+        lld.addFirst(2);
+        lld.addLast(2);
+        lld.addLast(3);
+        ad.addFirst(1);
+        ad.addFirst(2);
+        ad.addLast(2);
+        ad.addLast(3);
+        assertEquals(true, lld.equals(ad));
     }
 
     @Test

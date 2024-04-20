@@ -174,4 +174,19 @@ public class LinkedListDequeTest {
         lld2.addFirst(2);
         assertEquals(true, lld1.equals(lld2));
     }
+
+    @Test
+    public void LLDEqualTest() {
+        ArrayDeque<Integer> lld = new ArrayDeque<Integer>();
+        LinkedListDeque<Integer> ad = new LinkedListDeque<Integer>();
+        lld.addFirst(1);
+        lld.addFirst(2);
+        lld.addLast(2);
+        lld.addLast(3);
+        ad.addFirst(1);
+        ad.addFirst(2);
+        ad.addLast(2);
+        ad.addLast(3);
+        assertEquals(true, lld.equals(ad));
+    }
 }
