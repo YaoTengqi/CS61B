@@ -217,7 +217,7 @@ public class LinkedListDeque<T> implements Deque<T> {
             return false;
         }
 
-        Deque<T> other = (Deque<T>) o;
+        LinkedListDeque<T> other = (LinkedListDeque<T>) o;
 
         if (size != other.size()) {
             return false;

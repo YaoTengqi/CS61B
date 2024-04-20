@@ -191,7 +191,7 @@ public class ArrayDeque<T> implements Deque<T> {
             return false;
         }
 
-        Deque<T> other = (Deque<T>) o;
+        ArrayDeque<T> other = (ArrayDeque<T>) o;
 
         if (itemCount != other.size()) {
             return false;
