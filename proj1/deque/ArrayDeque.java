@@ -145,28 +145,28 @@ public class ArrayDeque<T> implements Deque<T> {
     }
 
     public class ADequeIterator implements Iterator<T> {
-        int iteratorCount = -1;
+        private int currentIndex = firstSentinel + 1;
 
         public boolean hasNext() {
-            if (iteratorCount != itemCount) {
+
+            if ((firstSentinel > lastSentinel && currentIndex > firstSentinel)
+                    || (firstSentinel > lastSentinel && currentIndex < lastSentinel)
+                    || (firstSentinel < lastSentinel && currentIndex > firstSentinel && currentIndex < lastSentinel)) {
                 return true;
             }
             return false;
         }
 
         public T next() {
-            T result = null;
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
-            if (lastSentinel == 0) {
-                result = items[firstSentinel];
-                firstSentinel = firstSentinel + 1;
+            T result = items[currentIndex];
+            if (currentIndex == size - 1) {
+                currentIndex = 0;
             } else {
-                result = items[lastSentinel];
-                lastSentinel = lastSentinel - 1;
+                currentIndex = currentIndex + 1;
             }
-            iteratorCount = iteratorCount + 1;
             return result;
         }
     }
