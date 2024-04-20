@@ -162,7 +162,7 @@ public class LinkedListDeque<T> implements Deque<T> {
         return result;
     }
 
-    public class LLDIterator implements Iterator<T> {
+    private class LLDIterator implements Iterator<T> {
 
         private LinkedListNode<T> current_node = sentinel;
 
@@ -194,11 +194,11 @@ public class LinkedListDeque<T> implements Deque<T> {
     }
 
     public T getRecursive(int index) {
-        LinkedListNode p = sentinel;
+        LinkedListNode p = sentinel.next;
         return getRecursiveHelper(index, p);
     }
 
-    public T getRecursiveHelper(int index, LinkedListNode p) {
+    private T getRecursiveHelper(int index, LinkedListNode p) {
         if (p == null) {
             return null;
         }

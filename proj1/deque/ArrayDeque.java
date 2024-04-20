@@ -152,7 +152,7 @@ public class ArrayDeque<T> implements Deque<T> {
         }
     }
 
-    public class ADequeIterator implements Iterator<T> {
+    private class ADequeIterator implements Iterator<T> {
         private int currentIndex = firstSentinel + 1;
 
         public boolean hasNext() {

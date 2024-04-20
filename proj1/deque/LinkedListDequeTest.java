@@ -51,12 +51,9 @@ public class LinkedListDequeTest {
         LinkedListDeque<Integer> lld1 = new LinkedListDeque<Integer>();
 
 
+        lld1.addLast(0);
         lld1.addFirst(1);
-        lld1.addFirst(2);
-        lld1.addFirst(3);
-        lld1.removeFirst();
-        lld1.addFirst(5);
-        int result = lld1.removeLast();
+        int result = lld1.getRecursive(0);
         assertEquals(1, result);
 
     }
