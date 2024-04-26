@@ -1,10 +1,8 @@
 package gitlet;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.security.MessageDigest;
+import jdk.jshell.execution.Util;
+
+import java.io.*;
 import java.security.NoSuchAlgorithmException;
 
 /**
@@ -13,7 +11,7 @@ import java.security.NoSuchAlgorithmException;
  * a single file might correspond to multiple blobs:
  * each being tracked in a different commit.
  */
-public class Blobs {
+public class Blobs implements Serializable {
     private String blobID;
     private byte[] content;
 
@@ -30,7 +28,7 @@ public class Blobs {
             throw new FileNotFoundException();
         } else { // 存在时获取文件内容
             this.content = readFileToBytes(blob_file);
-            this.blobID = calculateID(this.content);
+            this.blobID = Utils.sha1(this.content);
         }
     }
 
@@ -47,23 +45,6 @@ public class Blobs {
         fis.read(temp_bytes);
         fis.close();
         return temp_bytes;
-    }
-
-    /**
-     * 根据文件数据计算出相应的SHA-1哈希ID
-     *
-     * @param content
-     * @return
-     * @throws NoSuchAlgorithmException
-     */
-    private String calculateID(byte[] content) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("SHA-1");
-        byte[] hashBytes = digest.digest(content);
-        StringBuilder hexString = new StringBuilder();
-        for (byte hashByte : hashBytes) {
-            hexString.append(String.format("%02x", hashByte));
-        }
-        return hexString.toString();
     }
 
     public String getBlobID() {

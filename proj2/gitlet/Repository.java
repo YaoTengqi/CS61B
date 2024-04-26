@@ -30,6 +30,8 @@ public class Repository {
      * The .gitlet directory.
      */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
+    public static final File STAGE_AREA = join(GITLET_DIR, "stage_area");
+    public static final File COMMIT_AREA = join(GITLET_DIR, "commit_area");
 
     /* TODO: fill in the rest of this class. */
     public static void makeSetup() {
@@ -38,6 +40,22 @@ public class Repository {
             // TODO: execute the first commit
         } else {
             System.out.println("A Gitlet version-control system already exists in the current directory.");
+        }
+    }
+
+    public static void makeStageArea() {
+        if (!STAGE_AREA.exists()) {
+            STAGE_AREA.mkdir();
+        } else {
+            System.out.println("A STAGE_AREA already exists in the current directory.");
+        }
+    }
+
+    public static void makeCommitArea() {
+        if (!COMMIT_AREA.exists()) {
+            COMMIT_AREA.mkdir();
+        } else {
+            System.out.println("A COMMIT_AREA already exists in the current directory.");
         }
     }
 }

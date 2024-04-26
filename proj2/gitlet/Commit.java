@@ -2,7 +2,6 @@ package gitlet;
 
 // TODO: any imports you need here
 
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date; // TODO: You'll likely use this in this class
 
@@ -31,7 +30,6 @@ public class Commit {
     private Blobs[] blobArray;  //本次提交所包含的blob，存储在此队列中
     private Commit parent = null;      //本次提交的父亲commit
 
-
     /* TODO: fill in the rest of this class. */
     public Commit(String message, Blobs[] blobArray, Commit parent) throws NoSuchAlgorithmException {
         this.message = message;
@@ -43,20 +41,10 @@ public class Commit {
     }
 
     private String calculateID(Commit parent, Blobs[] blobArray) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("SHA-1");
         String parentCommitID = (parent != null) ? parent.getCommitID() : "";
         String blobIDs = this.getBlobsID();
-        String commitInfo = parentCommitID + blobIDs;
-        byte[] hashBytes = digest.digest(commitInfo.getBytes());
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : hashBytes) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) {
-                hexString.append('0');
-            }
-            hexString.append(hex);
-        }
-        return hexString.toString();
+        String commitInfo = parentCommitID + blobIDs + message + time;
+        return Utils.sha1(commitInfo);
     }
 
     private String getBlobsID() {

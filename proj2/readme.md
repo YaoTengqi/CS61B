@@ -49,6 +49,29 @@ Main文件是整个项目的入口，他根据输入的args[]参数识别命令�
 |       public static String calculateID(byte[] content)       | String |         根据文件数据计算出相应的SHA-1哈希ID         |
 |                 private String getBlobsID()                  | String |   获取所有blobArray中的blobID，被calculateID调用    |
 
+
+
+### Repository
+
+Repository负责对文件夹进行操作
+
+#### 属性
+
+|   属性名    |    格式    |                 描述                  |
+| :---------: | :--------: | :-----------------------------------: |
+|     CWD     | final File |          当前工作的文件路径           |
+| GITLET_DIR  | final File |             .gitlet的路径             |
+| STAGE_AREA  | final File | 暂存区路径，用于存储add指令添加的文件 |
+| COMMIT_AREA | fina File  |       用于存储每次commit的对象        |
+
+#### 函数
+
+|               函数名                | 返回值 |         描述          |
+| :---------------------------------: | :----: | :-------------------: |
+|   public static void makeSetup()    |   /    |  初始化.gitlet文件夹  |
+| public static void makeStageArea()  |   /    | 创建STAGE_AREA文件夹  |
+| public static void makeCommitArea() |   /    | 创建COMMIT_AREA文件夹 |
+
 ## Algorithms
 
 ### Init
