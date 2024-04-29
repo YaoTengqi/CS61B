@@ -33,10 +33,10 @@ public class Main {
             String firstArg = args[0];
             switch (firstArg) {
                 case "init":
-                    Repository.makeSetup();
-                    Repository.makeStageArea();
-                    Repository.makeCommitArea();
-                    Repository.makeHeadArea();
+//                    Repository.makeSetup();
+//                    Repository.makeStageArea();
+//                    Repository.makeCommitArea();
+//                    Repository.makeHeadArea();
                     String commitMessage = "This is the first commit!";
                     Commit firstCommit = new Commit(commitMessage, null, null);
                     firstCommit.writeCommit(Repository.HEAD_AREA, "head");
@@ -82,6 +82,7 @@ public class Main {
                         throw new GitletException("Please enter message.");
                     } else {
                         secondArg = args[1];
+                        boolean equalWithCurrent = true;
                         List<String> fileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
                         if (fileNames.size() == 0) {
                             System.out.println("The Staging area is clean. Will not do any commits.");
@@ -90,20 +91,39 @@ public class Main {
                             Blobs[] previousBlobArray = currentCommit.getBlobArray();
                             if (previousBlobArray == null) {
                                 previousBlobArray = blobArray;
+                                equalWithCurrent = false;
                             } else {
                                 for (int i = 0; i < blobArray.length; i++) {
+                                    boolean equalName = false;
                                     for (int j = 0; j < previousBlobArray.length; j++) {
-                                        if (blobArray[i].getBlobName() == previousBlobArray[j].getBlobName() &&
-                                                blobArray[i].getBlobID() != previousBlobArray[j].getBlobID()) {
-                                            previousBlobArray[j] = blobArray[i];
+                                        if (blobArray[i].getBlobName().equals(previousBlobArray[j].getBlobName())) {
+                                            if (!blobArray[i].getBlobID().equals(previousBlobArray[j].getBlobID())) {
+                                                previousBlobArray[j] = blobArray[i];
+                                                equalWithCurrent = false;
+                                            }
+                                            equalName = true;
                                         }
+                                    }
+                                    if (!equalName) { //当没有同名文件时，新增文件到commit中
+                                        Blobs[] tempBlobArray = new Blobs[previousBlobArray.length + 1];
+                                        for (int k = 0; k < previousBlobArray.length; k++) {
+                                            tempBlobArray[k] = previousBlobArray[k];
+                                        }
+                                        tempBlobArray[previousBlobArray.length] = blobArray[i];
+                                        previousBlobArray = tempBlobArray;
+                                        equalWithCurrent = false;
                                     }
                                 }
                             }
-                            Commit newCommit = new Commit(secondArg, previousBlobArray, currentCommit);
-                            newCommit.writeCommit(Repository.COMMIT_AREA, newCommit.getCommitID()); // 将commit写入COMMIT_AREA
-                            headCommit.delete();
-                            newCommit.writeCommit(Repository.HEAD_AREA, "head");// 头指针指向最新的commit
+                            if (!equalWithCurrent) {
+                                Commit newCommit = new Commit(secondArg, previousBlobArray, currentCommit);
+                                newCommit.writeCommit(Repository.COMMIT_AREA, newCommit.getCommitID()); // 将commit写入COMMIT_AREA
+                                headCommit.delete();
+                                newCommit.writeCommit(Repository.HEAD_AREA, "head");// 头指针指向最新的commit
+                            } else {
+                                Commit.clearStageArea(fileNames);
+                                throw new GitletException("The commit is same with previous.");
+                            }
                             // 清空缓存区
                             Commit.clearStageArea(fileNames);
                         }

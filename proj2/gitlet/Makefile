@@ -45,7 +45,7 @@ SRCS := $(wildcard *.java)
 	javac $(JFLAGS) -cp $(CPATH) $<
 
 # First, and therefore default, target.
-default: sentinel
+default: sentinel.txt
 
 check:
 	$(RMAKE) -C .. PYTHON=$(PYTHON) check
