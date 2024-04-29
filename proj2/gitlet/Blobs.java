@@ -1,9 +1,8 @@
 package gitlet;
 
-import jdk.jshell.execution.Util;
-
 import java.io.*;
-import java.security.NoSuchAlgorithmException;
+import java.util.List;
+
 
 /**
  * The saved contents of files.
@@ -13,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
  */
 public class Blobs implements Serializable {
     private String blobID;
+    private String blobName;
     private byte[] content;
 
     /**
@@ -21,13 +21,14 @@ public class Blobs implements Serializable {
      * @param fileName
      * @throws IOException
      */
-    public Blobs(String fileName) throws IOException, NoSuchAlgorithmException {
+    public Blobs(String fileName) throws IOException {
         File blob_file = new File(fileName);
         if (!blob_file.exists()) {    // 不存在时提示
             System.out.println(fileName + "doesn't exist, please check the file!");
             throw new FileNotFoundException();
         } else { // 存在时获取文件内容
             this.content = readFileToBytes(blob_file);
+            this.blobName = fileName;
             this.blobID = Utils.sha1(this.content);
         }
     }
@@ -47,11 +48,46 @@ public class Blobs implements Serializable {
         return temp_bytes;
     }
 
+    /**
+     * 对比Blobs是否相同
+     *
+     * @param blobArray
+     * @return
+     */
+    public Blobs equals(Blobs[] blobArray) {
+        for (int i = 0; i < blobArray.length; i++) {
+            Blobs blob = blobArray[i];
+            String blobID = blob.getBlobID();
+            if (blobID.equals(this.blobID)) {
+                return blob;
+            } else {
+                continue;
+            }
+        }
+        return null;
+    }
+
+    public static Blobs[] returnBlobsArray(List<String> fileNames) {
+        Blobs[] blobArray = new Blobs[fileNames.size()];
+        for (int i = 0; i < fileNames.size(); i++) {
+            String fileName = fileNames.get(i);
+            File file = new File(Repository.STAGE_AREA + "/" + fileName);
+            Blobs tempBlob = Utils.readObject(file, Blobs.class);
+            blobArray[i] = tempBlob;
+        }
+        return blobArray;
+    }
+
+
     public String getBlobID() {
         return this.blobID;
     }
 
     public byte[] getContent() {
         return this.content;
+    }
+
+    public String getBlobName() {
+        return blobName;
     }
 }

@@ -2,17 +2,21 @@ package gitlet;
 
 // TODO: any imports you need here
 
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date; // TODO: You'll likely use this in this class
+import java.util.List;
 
 /**
  * Represents a gitlet commit object.
- *  TODO: It's a good idea to give a description here of what else this Class
- *  does at a high level.
+ * 每个commit代表一次提交，有一个独一无二的ID，提交信息，提交时间，对blobs的引用以及父亲commit
+ * does at a high level.
  *
- * @author TODO
+ * @author ytq
  */
-public class Commit {
+public class Commit implements Serializable {
     /**
      * TODO: add instance variables here.
      *
@@ -28,7 +32,7 @@ public class Commit {
     private String message;     //每次提交都会有一个message来描述本次提交
     private Date time;          //提交的时间
     private Blobs[] blobArray;  //本次提交所包含的blob，存储在此队列中
-    private Commit parent = null;      //本次提交的父亲commit
+    private Commit parent;      //本次提交的父亲commit
 
     /* TODO: fill in the rest of this class. */
     public Commit(String message, Blobs[] blobArray, Commit parent) throws NoSuchAlgorithmException {
@@ -60,7 +64,31 @@ public class Commit {
         return blobIDs.toString();
     }
 
+    /**
+     * 将此commit写入COMMIT_AREA中
+     */
+    public void writeCommit(File AREA, String commitName) throws IOException {
+        File newCommit = Utils.join(AREA, commitName + ".bin");
+        if (!newCommit.exists()) {
+            newCommit.createNewFile();
+            Utils.writeObject(newCommit, this);
+        } else {
+            throw new GitletException("This commit already exists.");
+        }
+    }
+
+    public static void clearStageArea(List<String> fileNames) {
+        for (String fileName : fileNames) {
+            File deletedFile = Utils.join(Repository.STAGE_AREA, fileName);
+            deletedFile.delete();
+        }
+    }
+
     public String getCommitID() {
         return this.commitID;
+    }
+
+    public Blobs[] getBlobArray() {
+        return blobArray;
     }
 }

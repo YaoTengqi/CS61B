@@ -1,9 +1,12 @@
 package gitlet;
 
+import jdk.jshell.execution.Util;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.ResourceBundle;
 
 /**
@@ -19,24 +22,26 @@ public class Main {
      */
     public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
         // TODO: what if args is empty?
-        Commit currentCommit;
+        File headCommit = new File(Repository.HEAD_AREA + "/head.bin");
+        Commit currentCommit = null;
+        if (headCommit.exists()) {
+            currentCommit = Utils.readObject(headCommit, Commit.class);
+        }
         if (args.length == 0) {
             System.out.println("Please enter a command.");
         } else {
             String firstArg = args[0];
             switch (firstArg) {
                 case "init":
-                    // TODO: handle the `init` command
                     Repository.makeSetup();
                     Repository.makeStageArea();
                     Repository.makeCommitArea();
+                    Repository.makeHeadArea();
                     String commitMessage = "This is the first commit!";
-                    Blobs[] blobArray = {null};
-                    Commit firstCommit = new Commit(commitMessage, blobArray, null);
-                    currentCommit = firstCommit;
+                    Commit firstCommit = new Commit(commitMessage, null, null);
+                    firstCommit.writeCommit(Repository.HEAD_AREA, "head");
                     break;
                 case "add":
-                    // TODO: handle the `add [filename]` command
                     if (!Repository.STAGE_AREA.exists()) {
                         throw new GitletException("STAGE_AREA doesn't exists, please execute 'git init' first.");
                     }
@@ -44,9 +49,9 @@ public class Main {
                     if (secondArg == null) {
                         throw new GitletException("Please enter filename.");
                     } else {
-                        File addFile = new File(Repository.CWD + secondArg);
+                        File addFile = new File(Repository.CWD + "/" + secondArg);
                         if (!addFile.exists()) {
-                            throw new GitletException(addFile + "does not exist.");
+                            throw new GitletException(addFile + " does not exist.");
                         } else {
                             String[] parts = secondArg.split("/");
                             String realFileName = parts[parts.length - 1]; // 获取真正的文件名
@@ -54,7 +59,53 @@ public class Main {
                             String fileNameWithoutExtension = realFileName.substring(0, lastIndex);
                             File createFile = new File(Repository.STAGE_AREA + "/" + fileNameWithoutExtension + ".bin");
                             Blobs blobFile = new Blobs(Repository.CWD + secondArg);
-                            Utils.writeObject(createFile, blobFile);
+                            List<String> fileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
+                            Blobs[] blobArray = Blobs.returnBlobsArray(fileNames);
+                            Blobs isExisted = blobFile.equals(blobArray);
+                            if (isExisted == null) {    // 文件不存在于暂存区
+                                Utils.writeObject(createFile, blobFile);
+                            } else {    // 文件存在于暂存区
+                                //删除此文件
+                                createFile.delete();
+                            }
+                        }
+                    }
+                    break;
+                case "commit":
+                    if (!Repository.STAGE_AREA.exists()) {
+                        throw new GitletException("STAGE_AREA doesn't exists, please execute 'git init' first.");
+                    }
+                    if (!Repository.COMMIT_AREA.exists()) {
+                        throw new GitletException("COMMIT_AREA doesn't exists, please execute 'git init' first.");
+                    }
+                    if (args.length < 2) {
+                        throw new GitletException("Please enter message.");
+                    } else {
+                        secondArg = args[1];
+                        List<String> fileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
+                        if (fileNames.size() == 0) {
+                            System.out.println("The Staging area is clean. Will not do any commits.");
+                        } else { // 对比新文件和父亲commit指向的blobs是否发生了变化，如果有变化则替换
+                            Blobs[] blobArray = Blobs.returnBlobsArray(fileNames);
+                            Blobs[] previousBlobArray = currentCommit.getBlobArray();
+                            if (previousBlobArray == null) {
+                                previousBlobArray = blobArray;
+                            } else {
+                                for (int i = 0; i < blobArray.length; i++) {
+                                    for (int j = 0; j < previousBlobArray.length; j++) {
+                                        if (blobArray[i].getBlobName() == previousBlobArray[j].getBlobName() &&
+                                                blobArray[i].getBlobID() != previousBlobArray[j].getBlobID()) {
+                                            previousBlobArray[j] = blobArray[i];
+                                        }
+                                    }
+                                }
+                            }
+                            Commit newCommit = new Commit(secondArg, previousBlobArray, currentCommit);
+                            newCommit.writeCommit(Repository.COMMIT_AREA, newCommit.getCommitID()); // 将commit写入COMMIT_AREA
+                            headCommit.delete();
+                            newCommit.writeCommit(Repository.HEAD_AREA, "head");// 头指针指向最新的commit
+                            // 清空缓存区
+                            Commit.clearStageArea(fileNames);
                         }
                     }
                     break;

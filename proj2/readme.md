@@ -11,18 +11,20 @@ Main文件是整个项目的入口，他根据输入的args[]参数识别命令�
 
 #### 属性
 
-| 属性名  |  格式  |                    描述                    |
-| :-----: | :----: | :----------------------------------------: |
-| blob_ID | String |      每个blob都有一个由SHA-1生成的ID       |
-| content | byte[] | 每个blob将存储文件的内容，压缩为byte[]格式 |
+|  属性名  |  格式  |                    描述                    |
+| :------: | :----: | :----------------------------------------: |
+|  blobID  | String |      每个blob都有一个由SHA-1生成的ID       |
+| blobName | String |        每个blob都有一个自己的文件名        |
+| content  | byte[] | 每个blob将存储文件的内容，压缩为byte[]格式 |
 
 #### 函数
 
-|                        函数名                        | 返回值 |                     描述                     |
-| :--------------------------------------------------: | :----: | :------------------------------------------: |
-|            public Blobs(String fileName)             |   /    |         根据给定的文件名生成blob对象         |
-| public static byte[] readFileToBytes(File blob_file) | byte[] | 给定文件对象，读取文件中的内容到byte[]后返回 |
-|   public static String calculateID(byte[] content)   | String |     根据文件数据计算出相应的SHA-1哈希ID      |
+|                        函数名                        | 返回值  |                     描述                     |
+| :--------------------------------------------------: | :-----: | :------------------------------------------: |
+|            public Blobs(String fileName)             |    /    |         根据给定的文件名生成blob对象         |
+| public static byte[] readFileToBytes(File blob_file) | byte[]  | 给定文件对象，读取文件中的内容到byte[]后返回 |
+|   public static String calculateID(byte[] content)   | String  |     根据文件数据计算出相应的SHA-1哈希ID      |
+|        public boolean equals(Blobs... blobs)         | boolean |              对比Blobs是否相同               |
 
 
 
@@ -44,10 +46,12 @@ Main文件是整个项目的入口，他根据输入的args[]参数识别命令�
 
 |                            函数名                            | 返回值 |                        描述                         |
 | :----------------------------------------------------------: | :----: | :-------------------------------------------------: |
-| public Commit(String message, Blobs[] blobArray, Commit parent) |   /    | 根据给定的message,parent以及blobArray生成commit对象 |
-|     public static byte[] readFileToBytes(File blob_file)     | byte[] |    给定文件对象，读取文件中的内容到byte[]后返回     |
-|       public static String calculateID(byte[] content)       | String |         根据文件数据计算出相应的SHA-1哈希ID         |
-|                 private String getBlobsID()                  | String |   获取所有blobArray中的blobID，被calculateID调用    |
+| public **Commit**(String message, Blobs[] blobArray, Commit parent) |   /    | 根据给定的message,parent以及blobArray生成commit对象 |
+|   public static byte[] **readFileToBytes**(File blob_file)   | byte[] |    给定文件对象，读取文件中的内容到byte[]后返回     |
+|     public static String **calculateID**(byte[] content)     | String |         根据文件数据计算出相应的SHA-1哈希ID         |
+|               private String **getBlobsID**()                | String |   获取所有blobArray中的blobID，被calculateID调用    |
+|  public void **writeCommit**(File AREA, String commitName)   |   /    |             将此commit写入给定的AREA中              |
+|      public void clearStageArea(List<String> fileNames)      |   /    |           提交完commit后将STAGE_AREA清空            |
 
 
 
@@ -63,6 +67,7 @@ Repository负责对文件夹进行操作
 | GITLET_DIR  | final File |             .gitlet的路径             |
 | STAGE_AREA  | final File | 暂存区路径，用于存储add指令添加的文件 |
 | COMMIT_AREA | fina File  |       用于存储每次commit的对象        |
+|  HEAD_AREA  | fina File  |     用于存储每次head头指针的对象      |
 
 #### 函数
 

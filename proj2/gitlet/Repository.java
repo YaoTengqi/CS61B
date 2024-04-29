@@ -32,6 +32,7 @@ public class Repository {
     public static final File GITLET_DIR = join(CWD, ".gitlet");
     public static final File STAGE_AREA = join(GITLET_DIR, "stage_area");
     public static final File COMMIT_AREA = join(GITLET_DIR, "commit_area");
+    public static final File HEAD_AREA = join(GITLET_DIR, "head_area");
 
     /* TODO: fill in the rest of this class. */
     public static void makeSetup() {
@@ -39,7 +40,7 @@ public class Repository {
             GITLET_DIR.mkdir();
             // TODO: execute the first commit
         } else {
-            System.out.println("A Gitlet version-control system already exists in the current directory.");
+            throw new GitletException("A Gitlet version-control system already exists in the current directory.");
         }
     }
 
@@ -47,7 +48,7 @@ public class Repository {
         if (!STAGE_AREA.exists()) {
             STAGE_AREA.mkdir();
         } else {
-            System.out.println("A STAGE_AREA already exists in the current directory.");
+            throw new GitletException("A STAGE_AREA already exists in the current directory.");
         }
     }
 
@@ -55,7 +56,15 @@ public class Repository {
         if (!COMMIT_AREA.exists()) {
             COMMIT_AREA.mkdir();
         } else {
-            System.out.println("A COMMIT_AREA already exists in the current directory.");
+            throw new GitletException("A COMMIT_AREA already exists in the current directory.");
+        }
+    }
+
+    public static void makeHeadArea() {
+        if (!HEAD_AREA.exists()) {
+            HEAD_AREA.mkdir();
+        } else {
+            throw new GitletException("A HEAD_AREA already exists in the current directory.");
         }
     }
 }
