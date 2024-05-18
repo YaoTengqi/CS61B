@@ -30,6 +30,19 @@ public class Commit implements Serializable {
      */
     private String commitID;    //每个commit都有一个由SHA-1生成的ID
     private String message;     //每次提交都会有一个message来描述本次提交
+
+    public String getMessage() {
+        return message;
+    }
+
+    public Date getTime() {
+        return time;
+    }
+
+    public Commit getParent() {
+        return parent;
+    }
+
     private Date time;          //提交的时间
     private Blobs[] blobArray;  //本次提交所包含的blob，存储在此队列中
     private Commit parent;      //本次提交的父亲commit

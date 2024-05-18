@@ -50,7 +50,7 @@ public class Main {
                     if (secondArg == null) {
                         throw new GitletException("Please enter filename.");
                     } else {
-                        File addFile = new File(Repository.CWD + "/" + secondArg);
+                        File addFile = new File(Repository.CWD + secondArg);
                         if (!addFile.exists()) {
                             throw new GitletException(addFile + " does not exist.");
                         } else {
@@ -170,6 +170,17 @@ public class Main {
                         } else {
                             throw new GitletException("No reason to remove the file.");
                         }
+                    }
+                    break;
+                case "log":
+                    Commit logCommit = currentCommit;
+                    while (logCommit != null) {
+                        System.out.println("===");
+                        System.out.println("commit " + logCommit.getCommitID());
+                        System.out.println("Date: " + logCommit.getTime());
+                        System.out.println(logCommit.getMessage());
+                        System.out.println();
+                        logCommit = logCommit.getParent();
                     }
                     break;
                 default:
