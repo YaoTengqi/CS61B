@@ -74,7 +74,6 @@ public class Main {
                     }
                     break;
                 case "commit":
-                    // TODO: 把REMOVAL_STAGE中存在的文件在此commit中删除，并清空REMOVAL_STAGE
                     if (!Repository.STAGE_AREA.exists()) {
                         throw new GitletException("STAGE_AREA doesn't exists, please execute 'git init' first.");
                     }
@@ -89,6 +88,7 @@ public class Main {
                         List<String> stageFileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
                         List<String> removeFileNames = Utils.plainFilenamesIn(Repository.REMOVAL_AREA);
                         Blobs[] previousBlobArray = currentCommit.getBlobArray();
+                        Commit newCommit = new Commit(secondArg, previousBlobArray, currentCommit);
 
                         // 缓冲区文件操作
 //                        if (stageFileNames.size() == 0) {
@@ -123,10 +123,10 @@ public class Main {
 //                                }
 //                            }
                         // TODO: 处理previousBlobArray的数据问题
-                        boolean stageEqualWithCurrent = Commit.updateBlobArray(previousBlobArray, stageFileNames, "STAGE_AREA");
-                        boolean removalEqualWithCurrent = Commit.updateBlobArray(previousBlobArray, removeFileNames, "REMOVAL_AREA");
+                        boolean removalEqualWithCurrent = Commit.updateBlobArray(newCommit, previousBlobArray, removeFileNames, "REMOVAL_AREA");
+                        boolean stageEqualWithCurrent = Commit.updateBlobArray(newCommit, previousBlobArray, stageFileNames, "STAGE_AREA");
                         if (!(stageEqualWithCurrent && removalEqualWithCurrent)) {
-                            Commit newCommit = new Commit(secondArg, previousBlobArray, currentCommit);
+//                            Commit newCommit = new Commit(secondArg, previousBlobArray, currentCommit);
                             newCommit.writeCommit(Repository.COMMIT_AREA, newCommit.getCommitID()); // 将commit写入COMMIT_AREA
                             headCommit.delete();
                             newCommit.writeCommit(Repository.HEAD_AREA, "head");// 头指针指向最新的commit
@@ -179,6 +179,23 @@ public class Main {
                         System.out.println("commit " + logCommit.getCommitID());
                         System.out.println("Date: " + logCommit.getTime());
                         System.out.println(logCommit.getMessage());
+                        System.out.println();
+                        logCommit = logCommit.getParent();
+                    }
+                    break;
+                case "global-log":
+                    logCommit = currentCommit;
+                    while (logCommit != null) {
+                        System.out.println("===");
+                        System.out.println("commit " + logCommit.getCommitID());
+                        System.out.println("Date: " + logCommit.getTime());
+                        System.out.println(logCommit.getMessage());
+                        Blobs[] previousBlobArray = logCommit.getBlobArray();
+                        if (previousBlobArray != null) {
+                            for (Blobs blob : previousBlobArray) {
+                                System.out.println("Blobs: " + blob.getBlobID() + " " + blob.getBlobName());
+                            }
+                        }
                         System.out.println();
                         logCommit = logCommit.getParent();
                     }

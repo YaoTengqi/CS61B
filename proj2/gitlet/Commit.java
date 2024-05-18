@@ -31,6 +31,24 @@ public class Commit implements Serializable {
     private String commitID;    //每个commit都有一个由SHA-1生成的ID
     private String message;     //每次提交都会有一个message来描述本次提交
 
+    private Date time;          //提交的时间
+
+    private Blobs[] blobArray;  //本次提交所包含的blob，存储在此队列中
+    private Commit parent;      //本次提交的父亲commit
+
+    public Commit(String message, Blobs[] blobArray, Commit parent) throws NoSuchAlgorithmException {
+        this.message = message;
+        Date epochTime = new Date(0L);
+        this.time = epochTime;
+        this.blobArray = blobArray;
+        this.parent = parent;
+        this.commitID = calculateID(parent, blobArray);
+    }
+
+    public void setBlobArray(Blobs[] blobArray) {
+        this.blobArray = blobArray;
+    }
+
     public String getMessage() {
         return message;
     }
@@ -41,20 +59,6 @@ public class Commit implements Serializable {
 
     public Commit getParent() {
         return parent;
-    }
-
-    private Date time;          //提交的时间
-    private Blobs[] blobArray;  //本次提交所包含的blob，存储在此队列中
-    private Commit parent;      //本次提交的父亲commit
-
-    /* TODO: fill in the rest of this class. */
-    public Commit(String message, Blobs[] blobArray, Commit parent) throws NoSuchAlgorithmException {
-        this.message = message;
-        Date epochTime = new Date(0L);
-        this.time = epochTime;
-        this.blobArray = blobArray;
-        this.parent = parent;
-        this.commitID = calculateID(parent, blobArray);
     }
 
     private String calculateID(Commit parent, Blobs[] blobArray) throws NoSuchAlgorithmException {
@@ -102,7 +106,7 @@ public class Commit implements Serializable {
         }
     }
 
-    public static boolean updateBlobArray(Blobs[] previousBlobArray, List<String> fileNames, String command) {
+    public static boolean updateBlobArray(Commit updateCommit, Blobs[] previousBlobArray, List<String> fileNames, String command) {
         boolean equalWithCurrent = true;
         Blobs[] blobArray = null;
         if (fileNames.size() == 0) {
@@ -153,6 +157,7 @@ public class Commit implements Serializable {
                 }
             }
         }
+        updateCommit.setBlobArray(previousBlobArray);
         return equalWithCurrent;
     }
 
