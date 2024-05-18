@@ -77,11 +77,70 @@ public class Commit implements Serializable {
         }
     }
 
+    /**
+     * 删除STAGE_AREA中的blob
+     *
+     * @param fileNames
+     */
     public static void clearStageArea(List<String> fileNames) {
         for (String fileName : fileNames) {
             File deletedFile = Utils.join(Repository.STAGE_AREA, fileName);
             deletedFile.delete();
         }
+    }
+
+    public static boolean updateBlobArray(Blobs[] previousBlobArray, List<String> fileNames, String command) {
+        boolean equalWithCurrent = true;
+        Blobs[] blobArray = null;
+        if (fileNames.size() == 0) {
+            System.out.println("The Staging area is clean. Will not do any commits.");
+        } else { // 对比新文件和父亲commit指向的blobs是否发生了变化，如果有变化则替换
+            if (command.equals("STAGE_AREA")) {
+                blobArray = Blobs.returnBlobsArray(fileNames, Repository.STAGE_AREA);
+            } else if (command.equals("REMOVAL_AREA")) {
+                blobArray = Blobs.returnBlobsArray(fileNames, Repository.REMOVAL_AREA);
+            }
+            if (previousBlobArray == null) {
+                previousBlobArray = blobArray;
+                equalWithCurrent = false;
+            } else {
+                for (int i = 0; i < blobArray.length; i++) {
+                    boolean equalName = false;
+                    for (int j = 0; j < previousBlobArray.length; j++) {
+                        if (blobArray[i].getBlobName().equals(previousBlobArray[j].getBlobName())) {   // 出现同名文件时
+                            if (!blobArray[i].getBlobID().equals(previousBlobArray[j].getBlobID()) && command.equals("STAGE_AREA")) { //当操作缓存区stage_area时
+                                previousBlobArray[j] = blobArray[i];
+                                equalWithCurrent = false;
+                            }
+                            if (command.equals("REMOVAL_AREA")) {//当操作删除区removal_area时，将该文件从blobArray中删除
+                                Blobs[] tempBlobArray = new Blobs[previousBlobArray.length - 1];
+                                for (int k = 0; k < j; k++) {
+                                    tempBlobArray[k] = previousBlobArray[k];
+                                }
+                                for (int k = j; k < previousBlobArray.length - 1; k++) {
+                                    tempBlobArray[k] = previousBlobArray[k + 1];
+                                }
+                                previousBlobArray = tempBlobArray;
+                                equalWithCurrent = false;
+                            }
+                            equalName = true;
+                        }
+                    }
+                    if (!equalName && command.equals("STAGE_AREA")) { //当没有同名文件且操作暂存区时，新增文件到commit中
+                        Blobs[] tempBlobArray = new Blobs[previousBlobArray.length + 1];
+                        for (int k = 0; k < previousBlobArray.length; k++) {
+                            tempBlobArray[k] = previousBlobArray[k];
+                        }
+                        tempBlobArray[previousBlobArray.length] = blobArray[i];
+                        previousBlobArray = tempBlobArray;
+                        equalWithCurrent = false;
+                    } else if (!equalName && command.equals("REMOVAL_AREA")) {
+                        equalWithCurrent = true;
+                    }
+                }
+            }
+        }
+        return equalWithCurrent;
     }
 
     public String getCommitID() {

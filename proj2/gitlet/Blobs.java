@@ -2,6 +2,7 @@ package gitlet;
 
 import java.io.*;
 import java.util.List;
+import java.util.ResourceBundle;
 
 
 /**
@@ -24,7 +25,7 @@ public class Blobs implements Serializable {
     public Blobs(String fileName) throws IOException {
         File blob_file = new File(fileName);
         if (!blob_file.exists()) {    // 不存在时提示
-            System.out.println(fileName + "doesn't exist, please check the file!");
+            System.out.println(fileName + " doesn't exist, please check the file!");
             throw new FileNotFoundException();
         } else { // 存在时获取文件内容
             this.content = readFileToBytes(blob_file);
@@ -67,15 +68,41 @@ public class Blobs implements Serializable {
         return null;
     }
 
-    public static Blobs[] returnBlobsArray(List<String> fileNames) {
+    public static Blobs[] returnBlobsArray(List<String> fileNames, File workStage) {
         Blobs[] blobArray = new Blobs[fileNames.size()];
         for (int i = 0; i < fileNames.size(); i++) {
             String fileName = fileNames.get(i);
-            File file = new File(Repository.STAGE_AREA + "/" + fileName);
+            File file = new File(workStage + "/" + fileName);
             Blobs tempBlob = Utils.readObject(file, Blobs.class);
             blobArray[i] = tempBlob;
         }
         return blobArray;
+    }
+
+    public static boolean deleteStageFile(String fileName, String command) throws IOException {
+        boolean returnFlag = false;
+        Blobs[] blobArray = null;
+        String[] parts = fileName.split("/");
+        String realFileName = parts[parts.length - 1]; // 获取真正的文件名
+        int lastIndex = realFileName.lastIndexOf('.');
+        String fileNameWithoutExtension = realFileName.substring(0, lastIndex);
+        File createFile = new File(Repository.STAGE_AREA + "/" + fileNameWithoutExtension + ".bin");
+        Blobs blobFile = new Blobs(Repository.CWD + fileName);
+        List<String> fileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
+        if (command.equals("add")) {
+            blobArray = Blobs.returnBlobsArray(fileNames, Repository.STAGE_AREA);
+        } else if (command.equals("rm")) {
+            blobArray = Blobs.returnBlobsArray(fileNames, Repository.REMOVAL_AREA);
+        }
+        Blobs isExisted = blobFile.equals(blobArray);
+        if (isExisted == null && command.equals("add")) {    // 文件不存在于暂存区
+            Utils.writeObject(createFile, blobFile);
+        } else {    // 文件存在于暂存区
+            //删除此文件
+            createFile.delete();
+            returnFlag = true;
+        }
+        return returnFlag;
     }
 
 

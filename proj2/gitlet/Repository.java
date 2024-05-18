@@ -33,6 +33,7 @@ public class Repository {
     public static final File STAGE_AREA = join(GITLET_DIR, "stage_area");
     public static final File COMMIT_AREA = join(GITLET_DIR, "commit_area");
     public static final File HEAD_AREA = join(GITLET_DIR, "head_area");
+    public static final File REMOVAL_AREA = join(GITLET_DIR, "removal_area");
 
     /* TODO: fill in the rest of this class. */
     public static void makeSetup() {
@@ -65,6 +66,14 @@ public class Repository {
             HEAD_AREA.mkdir();
         } else {
             throw new GitletException("A HEAD_AREA already exists in the current directory.");
+        }
+    }
+
+    public static void makeRemovalArea() {
+        if (!REMOVAL_AREA.exists()) {
+            REMOVAL_AREA.mkdir();
+        } else {
+            throw new GitletException("A REMOVAL_AREA already exists in the current directory.");
         }
     }
 }

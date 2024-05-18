@@ -19,12 +19,15 @@ Main文件是整个项目的入口，他根据输入的args[]参数识别命令�
 
 #### 函数
 
-|                        函数名                        | 返回值  |                     描述                     |
-| :--------------------------------------------------: | :-----: | :------------------------------------------: |
-|            public Blobs(String fileName)             |    /    |         根据给定的文件名生成blob对象         |
-| public static byte[] readFileToBytes(File blob_file) | byte[]  | 给定文件对象，读取文件中的内容到byte[]后返回 |
-|   public static String calculateID(byte[] content)   | String  |     根据文件数据计算出相应的SHA-1哈希ID      |
-|        public boolean equals(Blobs... blobs)         | boolean |              对比Blobs是否相同               |
+|                            函数名                            | 返回值  |                             描述                             |
+| :----------------------------------------------------------: | :-----: | :----------------------------------------------------------: |
+|              public **Blobs**(String fileName)               |    /    |                 根据给定的文件名生成blob对象                 |
+|   public static byte[] **readFileToBytes**(File blob_file)   | byte[]  |         给定文件对象，读取文件中的内容到byte[]后返回         |
+|     public static String **calculateID**(byte[] content)     | String  |             根据文件数据计算出相应的SHA-1哈希ID              |
+|          public boolean **equals**(Blobs... blobs)           | boolean |                      对比Blobs是否相同                       |
+| public static Blobs[] returnBlobsArray(List<String> fileNames) | Blobs[] |                        返回所有Blobs                         |
+| public static void **deleteStageFile**(File createFile, String fileName) |    /    |                    删除STAGE_AREA中的blob                    |
+| public static Blobs[] updateBlobArray(Blobs[] previousBlobArray, List<String> fileNames,) | Blobs[] | 处理List<String>中的fileNames并根据内容进行更新，返回更新后的blobArray |
 
 
 
@@ -51,7 +54,7 @@ Main文件是整个项目的入口，他根据输入的args[]参数识别命令�
 |     public static String **calculateID**(byte[] content)     | String |         根据文件数据计算出相应的SHA-1哈希ID         |
 |               private String **getBlobsID**()                | String |   获取所有blobArray中的blobID，被calculateID调用    |
 |  public void **writeCommit**(File AREA, String commitName)   |   /    |             将此commit写入给定的AREA中              |
-|      public void clearStageArea(List<String> fileNames)      |   /    |           提交完commit后将STAGE_AREA清空            |
+|    public void **clearStageArea**(List<String> fileNames)    |   /    |           提交完commit后将STAGE_AREA清空            |
 
 
 
