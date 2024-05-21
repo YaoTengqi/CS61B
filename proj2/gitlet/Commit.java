@@ -81,6 +81,14 @@ public class Commit implements Serializable {
         return blobIDs.toString();
     }
 
+    public String getCommitID() {
+        return this.commitID;
+    }
+
+    public Blobs[] getBlobArray() {
+        return blobArray;
+    }
+
     /**
      * 将此commit写入COMMIT_AREA中
      */
@@ -159,13 +167,5 @@ public class Commit implements Serializable {
         }
         updateCommit.setBlobArray(previousBlobArray);
         return equalWithCurrent;
-    }
-
-    public String getCommitID() {
-        return this.commitID;
-    }
-
-    public Blobs[] getBlobArray() {
-        return blobArray;
     }
 }

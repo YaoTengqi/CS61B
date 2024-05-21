@@ -200,6 +200,26 @@ public class Main {
                         logCommit = logCommit.getParent();
                     }
                     break;
+                case "find":
+                    logCommit = currentCommit;
+                    boolean findFlag = false;
+                    if (args.length < 2) {
+                        throw new GitletException("Please enter removed file name.");
+                    } else {
+                        secondArg = args[1];
+                        while (logCommit != null) {
+                            String message = logCommit.getMessage();
+                            if (message.contains(secondArg)) {
+                                System.out.println(logCommit.getCommitID());
+                                findFlag = true;
+                            }
+                            logCommit = logCommit.getParent();
+                        }
+                    }
+                    if (!findFlag) {
+                        throw new GitletException("Found no commit with that message.");
+                    }
+                    break;
                 default:
                     System.out.println("No command with that name exists.");
             }
