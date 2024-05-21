@@ -220,6 +220,25 @@ public class Main {
                         throw new GitletException("Found no commit with that message.");
                     }
                     break;
+                case "status":
+                    List<String> stageFileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
+                    List<String> removeFileNames = Utils.plainFilenamesIn(Repository.REMOVAL_AREA);
+                    System.out.println("=== Branches ===");
+                    System.out.println("=== Staged Files ===");
+                    for (String stageFileName : stageFileNames) {
+                        System.out.println(stageFileName);
+                    }
+                    System.out.println();
+                    System.out.println("=== Removed Files ===");
+                    for (String removeFileName : removeFileNames) {
+                        System.out.println(removeFileName);
+                    }
+                    System.out.println();
+                    System.out.println("=== Modifications Not Staged For Commit ===");
+                    System.out.println();
+                    System.out.println("=== Untracked Files ===");
+                    System.out.println();
+                    break;
                 default:
                     System.out.println("No command with that name exists.");
             }
