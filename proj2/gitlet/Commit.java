@@ -117,7 +117,7 @@ public class Commit implements Serializable {
     public static boolean updateBlobArray(Commit updateCommit, Blobs[] previousBlobArray, List<String> fileNames, String command) {
         boolean equalWithCurrent = true;
         Blobs[] blobArray = null;
-        if (fileNames.size() == 0) {
+        if (fileNames.size() == 0 && command.equals("STAGE_AREA")) {
             System.out.println("The Staging area is clean. Will not do any commits.");
         } else { // 对比新文件和父亲commit指向的blobs是否发生了变化，如果有变化则替换
             if (command.equals("STAGE_AREA")) {

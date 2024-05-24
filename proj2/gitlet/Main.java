@@ -2,9 +2,7 @@ package gitlet;
 
 import jdk.jshell.execution.Util;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -226,12 +224,21 @@ public class Main {
                     System.out.println("=== Branches ===");
                     System.out.println("=== Staged Files ===");
                     for (String stageFileName : stageFileNames) {
-                        System.out.println(stageFileName);
+//                        System.out.println(stageFileName);
+                        File stageFile = new File(Repository.STAGE_AREA + "/" + stageFileName);
+                        Blobs blob = Utils.readObject(stageFile, Blobs.class);
+                        String[] parts = blob.getBlobName().split("/");
+                        String realFileName = parts[parts.length - 1]; // 获取真正的文件名
+                        System.out.println(realFileName);
                     }
                     System.out.println();
                     System.out.println("=== Removed Files ===");
                     for (String removeFileName : removeFileNames) {
-                        System.out.println(removeFileName);
+                        File removeFile = new File(Repository.REMOVAL_AREA + "/" + removeFileName);
+                        Blobs blob = Utils.readObject(removeFile, Blobs.class);
+                        String[] parts = blob.getBlobName().split("/");
+                        String realFileName = parts[parts.length - 1]; // 获取真正的文件名
+                        System.out.println(realFileName);
                     }
                     System.out.println();
                     System.out.println("=== Modifications Not Staged For Commit ===");
@@ -239,7 +246,32 @@ public class Main {
                     System.out.println("=== Untracked Files ===");
                     System.out.println();
                     break;
+                case "checkout":
+                    if (args.length < 2) {
+                        throw new GitletException("Please enter correctly.");
+                    } else {
+                        secondArg = args[1];
+                        // 1. java gitlet.Main checkout -- [file name]
+                        Blobs[] previousBlobArray = currentCommit.getBlobArray();
+                        String checkoutFileName = Repository.CWD + secondArg;
+                        for (Blobs blob : previousBlobArray) {
+                            if (checkoutFileName.equals(blob.getBlobName())) {
+                                //操作 local stage的文件
+                                File workStageFile = new File(checkoutFileName);
+                                if (workStageFile.exists()) {
+                                    workStageFile.delete();
+                                }
+                                workStageFile.createNewFile();
+                                FileOutputStream fos = new FileOutputStream(workStageFile);
+                                fos.write(blob.getContent());
+                            }
+                        }
+                        // 2. java gitlet.Main checkout [commit id] -- [file name]
+                        // 3. java gitlet.Main checkout [branch name]
+                    }
+                    break;
                 default:
+
                     System.out.println("No command with that name exists.");
             }
         }

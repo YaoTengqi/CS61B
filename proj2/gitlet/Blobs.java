@@ -16,6 +16,18 @@ public class Blobs implements Serializable {
     private String blobName;
     private byte[] content;
 
+    public String getBlobID() {
+        return this.blobID;
+    }
+
+    public byte[] getContent() {
+        return this.content;
+    }
+
+    public String getBlobName() {
+        return blobName;
+    }
+
     /**
      * 根据给定的文件名生成blob对象，先存储文件数据，再跟进文件数据计算出相应的SHA-1哈希ID
      *
@@ -87,6 +99,7 @@ public class Blobs implements Serializable {
         int lastIndex = realFileName.lastIndexOf('.');
         String fileNameWithoutExtension = realFileName.substring(0, lastIndex);
         File createFile = new File(Repository.STAGE_AREA + "/" + fileNameWithoutExtension + ".bin");
+//        File workStageFile = new File(Repository.CWD + fileName);
         Blobs blobFile = new Blobs(Repository.CWD + fileName);
         List<String> fileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
         if (command.equals("add")) {
@@ -105,16 +118,4 @@ public class Blobs implements Serializable {
         return returnFlag;
     }
 
-
-    public String getBlobID() {
-        return this.blobID;
-    }
-
-    public byte[] getContent() {
-        return this.content;
-    }
-
-    public String getBlobName() {
-        return blobName;
-    }
 }
