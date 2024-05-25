@@ -1,8 +1,8 @@
 package gitlet;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 
 
 /**
@@ -40,7 +40,7 @@ public class Blobs implements Serializable {
             System.out.println(fileName + " doesn't exist, please check the file!");
             throw new FileNotFoundException();
         } else { // 存在时获取文件内容
-            this.content = readFileToBytes(blob_file);
+            this.content = Utils.readContents(blob_file);
             this.blobName = fileName;
             this.blobID = Utils.sha1(this.content);
         }
@@ -53,13 +53,13 @@ public class Blobs implements Serializable {
      * @return
      * @throws IOException
      */
-    private byte[] readFileToBytes(File blob_file) throws IOException {
-        byte[] temp_bytes = new byte[(int) blob_file.length()];
-        FileInputStream fis = new FileInputStream(blob_file);
-        fis.read(temp_bytes);
-        fis.close();
-        return temp_bytes;
-    }
+//    private byte[] readFileToBytes(File blob_file) throws IOException {
+//        byte[] temp_bytes = new byte[(int) blob_file.length()];
+//        FileInputStream fis = new FileInputStream(blob_file);
+//        fis.read(temp_bytes);
+//        fis.close();
+//        return temp_bytes;
+//    }
 
     /**
      * 对比Blobs是否相同
@@ -80,20 +80,21 @@ public class Blobs implements Serializable {
         return null;
     }
 
-    public static Blobs[] returnBlobsArray(List<String> fileNames, File workStage) {
-        Blobs[] blobArray = new Blobs[fileNames.size()];
+
+    public static List<Blobs> returnBlobsList(List<String> fileNames, File workStage) {
+        List<Blobs> blobsList = new ArrayList<Blobs>();
         for (int i = 0; i < fileNames.size(); i++) {
             String fileName = fileNames.get(i);
             File file = new File(workStage + "/" + fileName);
             Blobs tempBlob = Utils.readObject(file, Blobs.class);
-            blobArray[i] = tempBlob;
+            blobsList.add(tempBlob);
         }
-        return blobArray;
+        return blobsList;
     }
 
     public static boolean deleteStageFile(String fileName, String command) throws IOException {
         boolean returnFlag = false;
-        Blobs[] blobArray = null;
+        List<Blobs> blobsList = null;
         String[] parts = fileName.split("/");
         String realFileName = parts[parts.length - 1]; // 获取真正的文件名
         int lastIndex = realFileName.lastIndexOf('.');
@@ -103,11 +104,17 @@ public class Blobs implements Serializable {
         Blobs blobFile = new Blobs(Repository.CWD + fileName);
         List<String> fileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
         if (command.equals("add")) {
-            blobArray = Blobs.returnBlobsArray(fileNames, Repository.STAGE_AREA);
+            blobsList = Blobs.returnBlobsList(fileNames, Repository.STAGE_AREA);
         } else if (command.equals("rm")) {
-            blobArray = Blobs.returnBlobsArray(fileNames, Repository.REMOVAL_AREA);
+            blobsList = Blobs.returnBlobsList(fileNames, Repository.REMOVAL_AREA);
         }
-        Blobs isExisted = blobFile.equals(blobArray);
+        Blobs isExisted = null;
+        for (Blobs blob : blobsList) {
+            if (blobFile.equals(blob)) {
+                isExisted = blob;
+                break;
+            }
+        }
         if (isExisted == null && command.equals("add")) {    // 文件不存在于暂存区
             Utils.writeObject(createFile, blobFile);
         } else {    // 文件存在于暂存区

@@ -1,11 +1,10 @@
 package gitlet;
 
-import jdk.jshell.execution.Util;
-
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
+
 
 /**
  * Driver class for Gitlet, a subset of the Git version-control system.
@@ -85,44 +84,12 @@ public class Main {
 
                         List<String> stageFileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
                         List<String> removeFileNames = Utils.plainFilenamesIn(Repository.REMOVAL_AREA);
-                        Blobs[] previousBlobArray = currentCommit.getBlobArray();
-                        Commit newCommit = new Commit(secondArg, previousBlobArray, currentCommit);
-
-                        // 缓冲区文件操作
-//                        if (stageFileNames.size() == 0) {
-//                            System.out.println("The Staging area is clean. Will not do any commits.");
-//                        } else { // 对比新文件和父亲commit指向的blobs是否发生了变化，如果有变化则替换
-//                            Blobs[] blobArray = Blobs.returnBlobsArray(stageFileNames);
-//                            boolean equalWithCurrent = true;
-//                            if (previousBlobArray == null) {
-//                                previousBlobArray = blobArray;
-//                                equalWithCurrent = false;
-//                            } else {
-//                                for (int i = 0; i < blobArray.length; i++) {
-//                                    boolean equalName = false;
-//                                    for (int j = 0; j < previousBlobArray.length; j++) {
-//                                        if (blobArray[i].getBlobName().equals(previousBlobArray[j].getBlobName())) {
-//                                            if (!blobArray[i].getBlobID().equals(previousBlobArray[j].getBlobID())) {
-//                                                previousBlobArray[j] = blobArray[i];
-//                                                equalWithCurrent = false;
-//                                            }
-//                                            equalName = true;
-//                                        }
-//                                    }
-//                                    if (!equalName) { //当没有同名文件时，新增文件到commit中
-//                                        Blobs[] tempBlobArray = new Blobs[previousBlobArray.length + 1];
-//                                        for (int k = 0; k < previousBlobArray.length; k++) {
-//                                            tempBlobArray[k] = previousBlobArray[k];
-//                                        }
-//                                        tempBlobArray[previousBlobArray.length] = blobArray[i];
-//                                        previousBlobArray = tempBlobArray;
-//                                        equalWithCurrent = false;
-//                                    }
-//                                }
-//                            }
+                        List<Blobs> previousBlobArray = currentCommit.getBlobArray();
+                        List<Blobs> currentCommitBlobArray = new ArrayList<>();
+                        Commit newCommit = new Commit(secondArg, currentCommitBlobArray, currentCommit);
                         // TODO: 处理previousBlobArray的数据问题
-                        boolean removalEqualWithCurrent = Commit.updateBlobArray(newCommit, previousBlobArray, removeFileNames, "REMOVAL_AREA");
                         boolean stageEqualWithCurrent = Commit.updateBlobArray(newCommit, previousBlobArray, stageFileNames, "STAGE_AREA");
+                        boolean removalEqualWithCurrent = Commit.updateBlobArray(newCommit, newCommit.getBlobArray(), removeFileNames, "REMOVAL_AREA");
                         if (!(stageEqualWithCurrent && removalEqualWithCurrent)) {
 //                            Commit newCommit = new Commit(secondArg, previousBlobArray, currentCommit);
                             newCommit.writeCommit(Repository.COMMIT_AREA, newCommit.getCommitID()); // 将commit写入COMMIT_AREA
@@ -145,9 +112,10 @@ public class Main {
                     } else {
                         secondArg = args[1];
                         List<String> fileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
-                        Blobs[] blobArray = Blobs.returnBlobsArray(fileNames, Repository.STAGE_AREA);
+                        List<Blobs> blobsList = Blobs.returnBlobsList(fileNames, Repository.STAGE_AREA);
                         boolean rmFlag = false;
-                        for (Blobs blob : blobArray) {
+                        for (int i = 0; i < blobsList.size(); i++) {
+                            Blobs blob = blobsList.get(i);
                             if (blob.getBlobName().equals(Repository.CWD + secondArg)) {
                                 // 该文件被commit过，标记为删除，在下一次commit时删除
                                 String[] parts = secondArg.split("/");
@@ -171,47 +139,47 @@ public class Main {
                     }
                     break;
                 case "log":
-                    Commit logCommit = currentCommit;
-                    while (logCommit != null) {
+                    List<Commit> logCommitList = Commit.returnCommitList(currentCommit);
+                    for (int i = 0; i < logCommitList.size(); i++) {
+                        Commit logCommit = logCommitList.get(i);
                         System.out.println("===");
                         System.out.println("commit " + logCommit.getCommitID());
                         System.out.println("Date: " + logCommit.getTime());
                         System.out.println(logCommit.getMessage());
                         System.out.println();
-                        logCommit = logCommit.getParent();
                     }
                     break;
                 case "global-log":
-                    logCommit = currentCommit;
-                    while (logCommit != null) {
+                    List<Commit> globalLogCommitList = Commit.returnCommitList(currentCommit);
+                    for (int i = 0; i < globalLogCommitList.size(); i++) {
+                        Commit globalLogCommit = globalLogCommitList.get(i);
                         System.out.println("===");
-                        System.out.println("commit " + logCommit.getCommitID());
-                        System.out.println("Date: " + logCommit.getTime());
-                        System.out.println(logCommit.getMessage());
-                        Blobs[] previousBlobArray = logCommit.getBlobArray();
+                        System.out.println("commit " + globalLogCommit.getCommitID());
+                        System.out.println("Date: " + globalLogCommit.getTime());
+                        System.out.println(globalLogCommit.getMessage());
+                        List<Blobs> previousBlobArray = globalLogCommit.getBlobArray();
                         if (previousBlobArray != null) {
                             for (Blobs blob : previousBlobArray) {
                                 System.out.println("Blobs: " + blob.getBlobID() + " " + blob.getBlobName());
                             }
                         }
                         System.out.println();
-                        logCommit = logCommit.getParent();
                     }
                     break;
                 case "find":
-                    logCommit = currentCommit;
+                    List<Commit> findCommitList = Commit.returnCommitList(currentCommit);
                     boolean findFlag = false;
                     if (args.length < 2) {
                         throw new GitletException("Please enter removed file name.");
                     } else {
                         secondArg = args[1];
-                        while (logCommit != null) {
-                            String message = logCommit.getMessage();
+                        for (int i = 0; i < findCommitList.size(); i++) {
+                            Commit findLogCommit = findCommitList.get(i);
+                            String message = findLogCommit.getMessage();
                             if (message.contains(secondArg)) {
-                                System.out.println(logCommit.getCommitID());
+                                System.out.println(findLogCommit.getCommitID());
                                 findFlag = true;
                             }
-                            logCommit = logCommit.getParent();
                         }
                     }
                     if (!findFlag) {
@@ -222,6 +190,7 @@ public class Main {
                     List<String> stageFileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
                     List<String> removeFileNames = Utils.plainFilenamesIn(Repository.REMOVAL_AREA);
                     System.out.println("=== Branches ===");
+                    System.out.println();
                     System.out.println("=== Staged Files ===");
                     for (String stageFileName : stageFileNames) {
 //                        System.out.println(stageFileName);
@@ -250,23 +219,16 @@ public class Main {
                     if (args.length < 2) {
                         throw new GitletException("Please enter correctly.");
                     } else {
-                        secondArg = args[1];
-                        // 1. java gitlet.Main checkout -- [file name]
-                        Blobs[] previousBlobArray = currentCommit.getBlobArray();
-                        String checkoutFileName = Repository.CWD + secondArg;
-                        for (Blobs blob : previousBlobArray) {
-                            if (checkoutFileName.equals(blob.getBlobName())) {
-                                //操作 local stage的文件
-                                File workStageFile = new File(checkoutFileName);
-                                if (workStageFile.exists()) {
-                                    workStageFile.delete();
-                                }
-                                workStageFile.createNewFile();
-                                FileOutputStream fos = new FileOutputStream(workStageFile);
-                                fos.write(blob.getContent());
-                            }
+                        if (args.length == 2) {
+                            secondArg = args[1];
+                            // 1. java gitlet.Main checkout -- [file name]
+                            Checkout.checkoutFile(currentCommit, secondArg);
+                        } else if (args.length == 3) {
+                            // 2. java gitlet.Main checkout [commit id] -- [file name]
+                            String commitID = args[1];
+                            String fileName = args[2];
+                            Checkout.checkoutCommitFile(currentCommit, fileName, commitID);
                         }
-                        // 2. java gitlet.Main checkout [commit id] -- [file name]
                         // 3. java gitlet.Main checkout [branch name]
                     }
                     break;

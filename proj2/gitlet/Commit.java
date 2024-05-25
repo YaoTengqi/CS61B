@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Date; // TODO: You'll likely use this in this class
 import java.util.List;
 
@@ -33,19 +34,19 @@ public class Commit implements Serializable {
 
     private Date time;          //提交的时间
 
-    private Blobs[] blobArray;  //本次提交所包含的blob，存储在此队列中
+    private List<Blobs> blobArray;  //本次提交所包含的blob，存储在此队列中
     private Commit parent;      //本次提交的父亲commit
 
-    public Commit(String message, Blobs[] blobArray, Commit parent) throws NoSuchAlgorithmException {
+    public Commit(String message, List<Blobs> blobArray, Commit parent) throws NoSuchAlgorithmException {
         this.message = message;
         Date epochTime = new Date(0L);
         this.time = epochTime;
         this.blobArray = blobArray;
         this.parent = parent;
-        this.commitID = calculateID(parent, blobArray);
+        this.commitID = calculateID(parent);
     }
 
-    public void setBlobArray(Blobs[] blobArray) {
+    public void setBlobArray(List<Blobs> blobArray) {
         this.blobArray = blobArray;
     }
 
@@ -61,7 +62,7 @@ public class Commit implements Serializable {
         return parent;
     }
 
-    private String calculateID(Commit parent, Blobs[] blobArray) throws NoSuchAlgorithmException {
+    private String calculateID(Commit parent) throws NoSuchAlgorithmException {
         String parentCommitID = (parent != null) ? parent.getCommitID() : "";
         String blobIDs = this.getBlobsID();
         String commitInfo = parentCommitID + blobIDs + message + time;
@@ -85,7 +86,7 @@ public class Commit implements Serializable {
         return this.commitID;
     }
 
-    public Blobs[] getBlobArray() {
+    public List<Blobs> getBlobArray() {
         return blobArray;
     }
 
@@ -114,50 +115,60 @@ public class Commit implements Serializable {
         }
     }
 
-    public static boolean updateBlobArray(Commit updateCommit, Blobs[] previousBlobArray, List<String> fileNames, String command) {
+    /**
+     * 更新Commit的BlobArray
+     *
+     * @param updateCommit
+     * @param previousBlobArray
+     * @param fileNames
+     * @param command
+     * @return
+     */
+    public static boolean updateBlobArray(Commit updateCommit, List<Blobs> previousBlobArray, List<String> fileNames, String command) {
         boolean equalWithCurrent = true;
-        Blobs[] blobArray = null;
+        List<Blobs> blobArray = new ArrayList<>();
+        List<Blobs> tempBlobArray = new ArrayList<>();
         if (fileNames.size() == 0 && command.equals("STAGE_AREA")) {
             System.out.println("The Staging area is clean. Will not do any commits.");
         } else { // 对比新文件和父亲commit指向的blobs是否发生了变化，如果有变化则替换
             if (command.equals("STAGE_AREA")) {
-                blobArray = Blobs.returnBlobsArray(fileNames, Repository.STAGE_AREA);
+                blobArray = Blobs.returnBlobsList(fileNames, Repository.STAGE_AREA);
             } else if (command.equals("REMOVAL_AREA")) {
-                blobArray = Blobs.returnBlobsArray(fileNames, Repository.REMOVAL_AREA);
+                blobArray = Blobs.returnBlobsList(fileNames, Repository.REMOVAL_AREA);
             }
             if (previousBlobArray == null) {
-                previousBlobArray = blobArray;
+                if (command.equals("STAGE_AREA")) {
+                    tempBlobArray = blobArray;
+                }
                 equalWithCurrent = false;
             } else {
-                for (int i = 0; i < blobArray.length; i++) {
+                tempBlobArray.addAll(previousBlobArray);
+                for (int i = 0; i < previousBlobArray.size(); i++) {
                     boolean equalName = false;
-                    for (int j = 0; j < previousBlobArray.length; j++) {
-                        if (blobArray[i].getBlobName().equals(previousBlobArray[j].getBlobName())) {   // 出现同名文件时
-                            if (!blobArray[i].getBlobID().equals(previousBlobArray[j].getBlobID()) && command.equals("STAGE_AREA")) { //当操作缓存区stage_area时
-                                previousBlobArray[j] = blobArray[i];
+                    for (int j = 0; j < blobArray.size(); j++) {
+                        if (blobArray.get(j).getBlobName().equals(previousBlobArray.get(i).getBlobName())) {   // 出现同名文件时
+                            if (!blobArray.get(j).getContent().equals(previousBlobArray.get(i).getContent()) && command.equals("STAGE_AREA")) { //当操作缓存区stage_area时
+                                tempBlobArray.remove(i);
+                                tempBlobArray.add(i, blobArray.get(j));
                                 equalWithCurrent = false;
                             }
                             if (command.equals("REMOVAL_AREA")) {//当操作删除区removal_area时，将该文件从blobArray中删除
-                                Blobs[] tempBlobArray = new Blobs[previousBlobArray.length - 1];
                                 for (int k = 0; k < j; k++) {
-                                    tempBlobArray[k] = previousBlobArray[k];
+                                    tempBlobArray.add(k, previousBlobArray.get(k));
                                 }
-                                for (int k = j; k < previousBlobArray.length - 1; k++) {
-                                    tempBlobArray[k] = previousBlobArray[k + 1];
+                                for (int k = j; k < previousBlobArray.size() - 1; k++) {
+                                    tempBlobArray.add(previousBlobArray.get(k + 1));
                                 }
-                                previousBlobArray = tempBlobArray;
                                 equalWithCurrent = false;
                             }
                             equalName = true;
                         }
                     }
                     if (!equalName && command.equals("STAGE_AREA")) { //当没有同名文件且操作暂存区时，新增文件到commit中
-                        Blobs[] tempBlobArray = new Blobs[previousBlobArray.length + 1];
-                        for (int k = 0; k < previousBlobArray.length; k++) {
-                            tempBlobArray[k] = previousBlobArray[k];
+                        for (int k = 0; k < previousBlobArray.size(); k++) {
+                            tempBlobArray.add(previousBlobArray.get(k));
                         }
-                        tempBlobArray[previousBlobArray.length] = blobArray[i];
-                        previousBlobArray = tempBlobArray;
+                        tempBlobArray.add(blobArray.get(i));
                         equalWithCurrent = false;
                     } else if (!equalName && command.equals("REMOVAL_AREA")) {
                         equalWithCurrent = true;
@@ -165,7 +176,25 @@ public class Commit implements Serializable {
                 }
             }
         }
-        updateCommit.setBlobArray(previousBlobArray);
+        updateCommit.setBlobArray(tempBlobArray);
         return equalWithCurrent;
+    }
+
+    /**
+     * 根据父亲指针循环获取Commit得到commitList
+     *
+     * @param currentCommit
+     * @return
+     */
+    public static List<Commit> returnCommitList(Commit currentCommit) {
+        List<Commit> commitList = new ArrayList<Commit>();
+        Commit commit = currentCommit;
+        int commitIdx = 0;
+        while (commit != null) {
+            commitList.add(commit);
+            commitIdx = commitIdx + 1;
+            commit = commit.getParent();
+        }
+        return commitList;
     }
 }
