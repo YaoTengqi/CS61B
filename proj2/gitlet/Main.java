@@ -51,21 +51,6 @@ public class Main {
                         if (!addFile.exists()) {
                             throw new GitletException(addFile + " does not exist.");
                         } else {
-//                            String[] parts = secondArg.split("/");
-//                            String realFileName = parts[parts.length - 1]; // 获取真正的文件名
-//                            int lastIndex = realFileName.lastIndexOf('.');
-//                            String fileNameWithoutExtension = realFileName.substring(0, lastIndex);
-//                            File createFile = new File(Repository.STAGE_AREA + "/" + fileNameWithoutExtension + ".bin");
-//                            Blobs blobFile = new Blobs(Repository.CWD + secondArg);
-//                            List<String> fileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
-//                            Blobs[] blobArray = Blobs.returnBlobsArray(fileNames);
-//                            Blobs isExisted = blobFile.equals(blobArray);
-//                            if (isExisted == null) {    // 文件不存在于暂存区
-//                                Utils.writeObject(createFile, blobFile);
-//                            } else {    // 文件存在于暂存区
-//                                //删除此文件
-//                                createFile.delete();
-//                            }
                             Blobs.deleteStageFile(secondArg, "add");
                         }
                     }
@@ -233,7 +218,6 @@ public class Main {
                     }
                     break;
                 default:
-
                     System.out.println("No command with that name exists.");
             }
         }

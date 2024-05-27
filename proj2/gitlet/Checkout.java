@@ -39,7 +39,9 @@ public class Checkout {
         boolean commitExists = false;
         for (int i = 0; i < commitList.size(); i++) {
             Commit commit = commitList.get(i);
-            if (commit.getCommitID().equals(commitID)) {
+            String shortCommitID = commit.getCommitID().substring(0, 6);
+            String shortCheckoutID = commitID.substring(0, 6);
+            if (shortCommitID.equals(shortCheckoutID)) {
                 commitExists = true;
                 checkoutFile(commit, fileName);
             }
