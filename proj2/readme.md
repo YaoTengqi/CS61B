@@ -19,15 +19,15 @@ Main文件是整个项目的入口，他根据输入的args[]参数识别命令�
 
 #### 函数
 
-|                            函数名                            | 返回值  |                             描述                             |
-| :----------------------------------------------------------: | :-----: | :----------------------------------------------------------: |
-|              public **Blobs**(String fileName)               |    /    |                 根据给定的文件名生成blob对象                 |
-|   public static byte[] **readFileToBytes**(File blob_file)   | byte[]  |         给定文件对象，读取文件中的内容到byte[]后返回         |
-|     public static String **calculateID**(byte[] content)     | String  |             根据文件数据计算出相应的SHA-1哈希ID              |
-|          public boolean **equals**(Blobs... blobs)           | boolean |                      对比Blobs是否相同                       |
-| public static Blobs[] returnBlobsArray(List<String> fileNames) | Blobs[] |                        返回所有Blobs                         |
-| public static void **deleteStageFile**(File createFile, String fileName) |    /    |                    删除STAGE_AREA中的blob                    |
-| public static Blobs[] updateBlobArray(Blobs[] previousBlobArray, List<String> fileNames,) | Blobs[] | 处理List<String>中的fileNames并根据内容进行更新，返回更新后的blobArray |
+|                            函数名                            |    返回值    |                             描述                             |
+| :----------------------------------------------------------: | :----------: | :----------------------------------------------------------: |
+|              public **Blobs**(String fileName)               |      /       |                 根据给定的文件名生成blob对象                 |
+|   public static byte[] **readFileToBytes**(File blob_file)   |    byte[]    |         给定文件对象，读取文件中的内容到byte[]后返回         |
+|     public static String **calculateID**(byte[] content)     |    String    |             根据文件数据计算出相应的SHA-1哈希ID              |
+|          public boolean **equals**(Blobs... blobs)           |   boolean    |                      对比Blobs是否相同                       |
+| public static List<Blobs\> returnBlobsList(List<String\> fileNames, File workStage) | List<Blobs\> |                        返回所有Blobs                         |
+| public static void **deleteStageFile**(File createFile, String fileName) |      /       |                    删除STAGE_AREA中的blob                    |
+| public static Blobs[] updateBlobArray(Blobs[] previousBlobArray, List<String> fileNames,) |   Blobs[]    | 处理List<String>中的fileNames并根据内容进行更新，返回更新后的blobArray |
 
 
 
@@ -37,13 +37,13 @@ Main文件是整个项目的入口，他根据输入的args[]参数识别命令�
 
 #### 属性
 
-|  属性名   |  格式   |                  描述                   |
-| :-------: | :-----: | :-------------------------------------: |
-| commit_ID | String  |    每个commit都有一个由SHA-1生成的ID    |
-|  message  | String  | 每次提交都会有一个message来描述本次提交 |
-|   time    |  Date   |               提交的时间                |
-| blobArray | Blobs[] |  本次提交所包含的blob，存储在此队列中   |
-|  parent   | commit  |          本次提交的父亲commit           |
+|  属性名   |     格式     |                  描述                   |
+| :-------: | :----------: | :-------------------------------------: |
+| commit_ID |    String    |    每个commit都有一个由SHA-1生成的ID    |
+|  message  |    String    | 每次提交都会有一个message来描述本次提交 |
+|   time    |     Date     |               提交的时间                |
+| blobArray | List<Blobs\> |  本次提交所包含的blob，存储在此队列中   |
+|  parent   |    commit    |          本次提交的父亲commit           |
 
 #### 函数
 
@@ -55,8 +55,8 @@ Main文件是整个项目的入口，他根据输入的args[]参数识别命令�
 |               private String **getBlobsID**()                |    String     |   获取所有blobArray中的blobID，被calculateID调用    |
 |  public void **writeCommit**(File AREA, String commitName)   |       /       |             将此commit写入给定的AREA中              |
 |   public void **clearStageArea**(List<String\> fileNames)    |       /       |           提交完commit后将STAGE_AREA清空            |
-| public static boolean updateBlobArray(Commit updateCommit, Blobs[] previousBlobArray, List<String\> fileNames, String command) |    Boolean    |                更新Commit的BlobArray                |
-| public static List<Commit\> returnCommitList(Commit currentCommit) | List<Commit\> |      根据父亲指针循环获取Commit得到CommitList       |
+| public static boolean **updateBlobArray**(Commit updateCommit, List<Blobs\> previousBlobArray, List<String\> fileNames, String command) |    Boolean    |                更新Commit的BlobArray                |
+| public static List<Commit\> **returnCommitList**(Commit currentCommit) | List<Commit\> |      根据父亲指针循环获取Commit得到CommitList       |
 
 
 
@@ -94,5 +94,8 @@ Repository负责对文件夹进行操作
 
 
 
+## IDEAL
 
+1. public static boolean **updateBlobArray**(Commit updateCommit, List<Blobs\> previousBlobArray, List<String\> fileNames, String command)函数中，需要一个tempBlobArray来操作存储变化的新BlobArray，因为直接令tempBlobArray = previousBlobArray的话他们俩指向的是同一块地址，操作tempBlobArray时previousBlobArray指向的内容也变换导致所有commit的BlobArray也随之变换出现问题。
+2. 用shortID查询commitID完成相应的`java gitlet.Main checkout [commit id] -- [file name]`功能会影响速度，Git的解决办法是把Blobs们依据**哈希值**的前两位建立文件夹进行存储，查找时只需算出哈希值就可以快速查找(O(1))。
 
