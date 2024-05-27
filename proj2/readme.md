@@ -47,14 +47,16 @@ Main文件是整个项目的入口，他根据输入的args[]参数识别命令�
 
 #### 函数
 
-|                            函数名                            | 返回值 |                        描述                         |
-| :----------------------------------------------------------: | :----: | :-------------------------------------------------: |
-| public **Commit**(String message, Blobs[] blobArray, Commit parent) |   /    | 根据给定的message,parent以及blobArray生成commit对象 |
-|   public static byte[] **readFileToBytes**(File blob_file)   | byte[] |    给定文件对象，读取文件中的内容到byte[]后返回     |
-|     public static String **calculateID**(byte[] content)     | String |         根据文件数据计算出相应的SHA-1哈希ID         |
-|               private String **getBlobsID**()                | String |   获取所有blobArray中的blobID，被calculateID调用    |
-|  public void **writeCommit**(File AREA, String commitName)   |   /    |             将此commit写入给定的AREA中              |
-|    public void **clearStageArea**(List<String> fileNames)    |   /    |           提交完commit后将STAGE_AREA清空            |
+|                            函数名                            |    返回值     |                        描述                         |
+| :----------------------------------------------------------: | :-----------: | :-------------------------------------------------: |
+| public **Commit**(String message, Blobs[] blobArray, Commit parent) |       /       | 根据给定的message,parent以及blobArray生成commit对象 |
+|   public static byte[] **readFileToBytes**(File blob_file)   |    byte[]     |    给定文件对象，读取文件中的内容到byte[]后返回     |
+|     public static String **calculateID**(byte[] content)     |    String     |         根据文件数据计算出相应的SHA-1哈希ID         |
+|               private String **getBlobsID**()                |    String     |   获取所有blobArray中的blobID，被calculateID调用    |
+|  public void **writeCommit**(File AREA, String commitName)   |       /       |             将此commit写入给定的AREA中              |
+|   public void **clearStageArea**(List<String\> fileNames)    |       /       |           提交完commit后将STAGE_AREA清空            |
+| public static boolean updateBlobArray(Commit updateCommit, Blobs[] previousBlobArray, List<String\> fileNames, String command) |    Boolean    |                更新Commit的BlobArray                |
+| public static List<Commit\> returnCommitList(Commit currentCommit) | List<Commit\> |      根据父亲指针循环获取Commit得到CommitList       |
 
 
 
