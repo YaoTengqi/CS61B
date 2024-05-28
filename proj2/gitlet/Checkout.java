@@ -9,7 +9,7 @@ public class Checkout {
     public static boolean checkoutFile(Commit currentCommit, String fileName) throws IOException {
         // 1. java gitlet.Main checkout -- [file name]
         List<Blobs> previousBlobArray = currentCommit.getBlobArray();
-        String checkoutFileName = Repository.CWD + fileName;
+        String checkoutFileName = Repository.WORK_STAGE + fileName;
         boolean fileExists = false;
         if (previousBlobArray == null) {
             throw new GitletException("File does not exist in that commit.");

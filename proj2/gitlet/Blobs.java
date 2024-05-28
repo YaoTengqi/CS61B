@@ -53,25 +53,31 @@ public class Blobs implements Serializable {
      * @param currentBlob
      * @return
      */
-    public static boolean trackFiles(List<Blobs> previousBlobList, Blobs currentBlob) {
+    public static int trackFiles(List<Blobs> previousBlobList, Blobs currentBlob) {
+        int returnFlag = 0;
         if (previousBlobList == null) {
-            return false;   // blobs不存在或发生改变
+            return 0;   // blobs不存在或发生改变
         }
         for (int i = 0; i < previousBlobList.size(); i++) {
+            String previousBlobName = previousBlobList.get(i).getBlobName();
+            String blobName = currentBlob.getBlobName();
             String previousBlobID = previousBlobList.get(i).getBlobID();
             String blobID = currentBlob.getBlobID();
-            if (blobID.equals(previousBlobID)) {
-                return true;    // blobs存在且并未改变
+            if (previousBlobName.equals(blobName)) {
+                returnFlag = 1; // blobs存在且发生改变
+                if (blobID.equals(previousBlobID)) {
+                    returnFlag = 2;    // blobs存在且并未改变
+                }
             }
         }
-        return false;   // blobs不存在或发生改变
+        return returnFlag;   // blobs不存在或发生改变
     }
 
     public static void addBlobs(Commit currentCommit, String blobFileName) throws IOException {
         List<Blobs> previousBlobList = currentCommit.getBlobArray();
         Blobs currentBlob = new Blobs(blobFileName);
-        boolean blobChangeFlag = trackFiles(previousBlobList, currentBlob);
-        if (!blobChangeFlag) {
+        int blobChangeFlag = trackFiles(previousBlobList, currentBlob);
+        if (blobChangeFlag != 2) {
             deleteStageFile(currentBlob.getBlobName(), "add", currentBlob);
         } else {
             throw new GitletException("This file is tracked and not changed.");
@@ -92,6 +98,7 @@ public class Blobs implements Serializable {
 
     /**
      * 删除或者添加STAGE_AREA中的blob
+     *
      * @param fileName
      * @param command
      * @param blobFile

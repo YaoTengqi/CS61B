@@ -109,7 +109,7 @@ public class Main {
                         File stageRemoveFile = Utils.join(Repository.STAGE_AREA, fileNameWithoutExtension + ".bin");
                         File removeFile = Utils.join(Repository.REMOVAL_AREA, fileNameWithoutExtension + ".bin");
                         // 如果STAGE_AREA中有对应的文件则将其删去
-                        boolean rmFlag = false;
+                        int rmFlag = -1;
                         for (int i = 0; i < stageBlobsList.size(); i++) {
                             Blobs blob = stageBlobsList.get(i);
                             if (blob.getBlobName().equals(Repository.WORK_STAGE + secondArg)) {
@@ -120,10 +120,10 @@ public class Main {
                         // 如果currentCommit中有对应的文件则将其放入REMOVE_AREA中下一次删去
                         Blobs removeBlob = new Blobs(Repository.WORK_STAGE + secondArg);
                         rmFlag = Blobs.trackFiles(currentCommit.getBlobArray(), removeBlob);
-                        if (rmFlag) {
+                        if (rmFlag == 1) {
                             Utils.writeObject(removeFile, removeBlob);
                             File thisFile = Utils.join(Repository.WORK_STAGE, secondArg);
-                            if (thisFile.exists() && rmFlag) {  // 在工作目录下删除文件
+                            if (thisFile.exists()) {  // 在工作目录下删除文件
                                 thisFile.delete();
                             } else {
                                 // rm fileName 的 file 即不在STAGE_AREA也不在headCommit中，将报错
@@ -184,6 +184,7 @@ public class Main {
                     List<String> stageFileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
                     List<String> removeFileNames = Utils.plainFilenamesIn(Repository.REMOVAL_AREA);
                     List<String> branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
+                    List<String> untrackedFileNames = new ArrayList<>();
                     System.out.println("=== Branches ===");
                     System.out.println("*" + currentCommit.getBranch());    //首先输出当前commit的名称，并带上*作为标识
                     for (String branchFileName : branchFileNames) {
@@ -214,8 +215,31 @@ public class Main {
                     }
                     System.out.println();
                     System.out.println("=== Modifications Not Staged For Commit ===");
+                    List<String> workStageFileNames = Utils.plainFilenamesIn(Repository.WORK_STAGE);
+                    for (String workStageFile : workStageFileNames) {
+                        Blobs blob = new Blobs(Repository.WORK_STAGE + "/" + workStageFile);
+                        int modifyFlag = Blobs.trackFiles(currentCommit.getBlobArray(), blob);
+                        if (modifyFlag == 2) {
+                            int lastIndex = workStageFile.lastIndexOf('.');
+                            String fileNameWithoutExtension = workStageFile.substring(0, lastIndex);
+                            File workStageBin = Utils.join(Repository.STAGE_AREA, fileNameWithoutExtension + ".bin");
+                            if (workStageBin.exists()) {
+                                Blobs stageBlob = Utils.readObject(workStageBin, Blobs.class);
+                                if (!stageBlob.getBlobID().equals(blob.getBlobID())) {
+                                    System.out.println(workStageFile);
+                                }
+                            }
+                        } else if (modifyFlag == 1) {
+                            System.out.println(workStageFile);
+                        } else if (modifyFlag == 0) {
+                            untrackedFileNames.add(workStageFile);
+                        }
+                    }
                     System.out.println();
                     System.out.println("=== Untracked Files ===");
+                    for (String untrackedFile : untrackedFileNames) {
+                        System.out.println(untrackedFile);
+                    }
                     System.out.println();
                     break;
                 case "checkout":
