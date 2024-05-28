@@ -42,42 +42,40 @@ public class Blobs implements Serializable {
         } else { // 存在时获取文件内容
             this.content = Utils.readContents(blob_file);
             this.blobName = fileName;
-            this.blobID = Utils.sha1(this.content);
+            this.blobID = Utils.sha1(this.blobName, this.content);
         }
     }
 
     /**
-     * 给定文件对象，读取文件中的内容到byte[]后返回
+     * 对比两个BlobsList是否一致，即检查上一个commit的BlobsList与当前要添加的blob是否一致
      *
-     * @param blob_file
-     * @return
-     * @throws IOException
-     */
-//    private byte[] readFileToBytes(File blob_file) throws IOException {
-//        byte[] temp_bytes = new byte[(int) blob_file.length()];
-//        FileInputStream fis = new FileInputStream(blob_file);
-//        fis.read(temp_bytes);
-//        fis.close();
-//        return temp_bytes;
-//    }
-
-    /**
-     * 对比Blobs是否相同
-     *
-     * @param blobArray
+     * @param previousBlobList
+     * @param currentBlob
      * @return
      */
-    public Blobs equals(Blobs[] blobArray) {
-        for (int i = 0; i < blobArray.length; i++) {
-            Blobs blob = blobArray[i];
-            String blobID = blob.getBlobID();
-            if (blobID.equals(this.blobID)) {
-                return blob;
-            } else {
-                continue;
+    public static boolean trackFiles(List<Blobs> previousBlobList, Blobs currentBlob) {
+        if (previousBlobList == null) {
+            return false;   // blobs不存在或发生改变
+        }
+        for (int i = 0; i < previousBlobList.size(); i++) {
+            String previousBlobID = previousBlobList.get(i).getBlobID();
+            String blobID = currentBlob.getBlobID();
+            if (blobID.equals(previousBlobID)) {
+                return true;    // blobs存在且并未改变
             }
         }
-        return null;
+        return false;   // blobs不存在或发生改变
+    }
+
+    public static void addBlobs(Commit currentCommit, String blobFileName) throws IOException {
+        List<Blobs> previousBlobList = currentCommit.getBlobArray();
+        Blobs currentBlob = new Blobs(blobFileName);
+        boolean blobChangeFlag = trackFiles(previousBlobList, currentBlob);
+        if (!blobChangeFlag) {
+            deleteStageFile(currentBlob.getBlobName(), "add", currentBlob);
+        } else {
+            throw new GitletException("This file is tracked and not changed.");
+        }
     }
 
 
@@ -92,16 +90,24 @@ public class Blobs implements Serializable {
         return blobsList;
     }
 
-    public static boolean deleteStageFile(String fileName, String command) throws IOException {
+    /**
+     * 删除或者添加STAGE_AREA中的blob
+     * @param fileName
+     * @param command
+     * @param blobFile
+     * @return
+     * @throws IOException
+     */
+    public static boolean deleteStageFile(String fileName, String command, Blobs blobFile) throws IOException {
         boolean returnFlag = false;
-        List<Blobs> blobsList = null;
+        List<Blobs> blobsList = new ArrayList<>();
         String[] parts = fileName.split("/");
         String realFileName = parts[parts.length - 1]; // 获取真正的文件名
         int lastIndex = realFileName.lastIndexOf('.');
         String fileNameWithoutExtension = realFileName.substring(0, lastIndex);
         File createFile = new File(Repository.STAGE_AREA + "/" + fileNameWithoutExtension + ".bin");
 //        File workStageFile = new File(Repository.CWD + fileName);
-        Blobs blobFile = new Blobs(Repository.CWD + fileName);
+//        Blobs blobFile = new Blobs(Repository.CWD + fileName);
         List<String> fileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
         if (command.equals("add")) {
             blobsList = Blobs.returnBlobsList(fileNames, Repository.STAGE_AREA);

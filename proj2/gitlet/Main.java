@@ -1,9 +1,12 @@
 package gitlet;
 
+import jdk.jshell.execution.Util;
+
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 
 
 /**
@@ -18,7 +21,6 @@ public class Main {
      * <COMMAND> <OPERAND1> <OPERAND2> ...
      */
     public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
-        // TODO: what if args is empty?
         File headCommit = new File(Repository.HEAD_AREA + "/head.bin");
         Commit currentCommit = null;
         if (headCommit.exists()) {
@@ -35,8 +37,9 @@ public class Main {
 //                    Repository.makeCommitArea();
 //                    Repository.makeHeadArea();
 //                    Repository.makeRemovalArea();
+                    String masterBranch = "master";
                     String commitMessage = "This is the first commit!";
-                    Commit firstCommit = new Commit(commitMessage, null, null);
+                    Commit firstCommit = new Commit(masterBranch, commitMessage, null, null);
                     firstCommit.writeCommit(Repository.HEAD_AREA, "head");
                     break;
                 case "add":
@@ -47,11 +50,12 @@ public class Main {
                     if (secondArg == null) {
                         throw new GitletException("Please enter filename.");
                     } else {
-                        File addFile = new File(Repository.CWD + secondArg);
+                        String addFileName = Repository.CWD + secondArg;
+                        File addFile = new File(addFileName);
                         if (!addFile.exists()) {
                             throw new GitletException(addFile + " does not exist.");
                         } else {
-                            Blobs.deleteStageFile(secondArg, "add");
+                            Blobs.addBlobs(currentCommit, addFileName);
                         }
                     }
                     break;
@@ -66,15 +70,15 @@ public class Main {
                         throw new GitletException("Please enter message.");
                     } else {
                         secondArg = args[1];
-
                         List<String> stageFileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
                         List<String> removeFileNames = Utils.plainFilenamesIn(Repository.REMOVAL_AREA);
                         List<Blobs> previousBlobArray = currentCommit.getBlobArray();
                         List<Blobs> currentCommitBlobArray = new ArrayList<>();
-                        Commit newCommit = new Commit(secondArg, currentCommitBlobArray, currentCommit);
+                        String currentBranch = currentCommit.getBranch();
+                        Commit newCommit = new Commit(currentBranch, secondArg, currentCommitBlobArray, currentCommit);
                         // TODO: 处理previousBlobArray的数据问题
                         boolean stageEqualWithCurrent = Commit.updateBlobArray(newCommit, previousBlobArray, stageFileNames, "STAGE_AREA");
-                        boolean removalEqualWithCurrent = Commit.updateBlobArray(newCommit, newCommit.getBlobArray(), removeFileNames, "REMOVAL_AREA");
+                        boolean removalEqualWithCurrent = Commit.updateBlobArray(newCommit, previousBlobArray, removeFileNames, "REMOVAL_AREA");
                         if (!(stageEqualWithCurrent && removalEqualWithCurrent)) {
 //                            Commit newCommit = new Commit(secondArg, previousBlobArray, currentCommit);
                             newCommit.writeCommit(Repository.COMMIT_AREA, newCommit.getCommitID()); // 将commit写入COMMIT_AREA
@@ -97,29 +101,34 @@ public class Main {
                     } else {
                         secondArg = args[1];
                         List<String> fileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
-                        List<Blobs> blobsList = Blobs.returnBlobsList(fileNames, Repository.STAGE_AREA);
+                        List<Blobs> stageBlobsList = Blobs.returnBlobsList(fileNames, Repository.STAGE_AREA);
+                        String[] parts = secondArg.split("/");
+                        String realFileName = parts[parts.length - 1]; // 获取真正的文件名
+                        int lastIndex = realFileName.lastIndexOf('.');
+                        String fileNameWithoutExtension = realFileName.substring(0, lastIndex);
+                        File stageRemoveFile = Utils.join(Repository.STAGE_AREA, fileNameWithoutExtension + ".bin");
+                        File removeFile = Utils.join(Repository.REMOVAL_AREA, fileNameWithoutExtension + ".bin");
+                        // 如果STAGE_AREA中有对应的文件则将其删去
                         boolean rmFlag = false;
-                        for (int i = 0; i < blobsList.size(); i++) {
-                            Blobs blob = blobsList.get(i);
+                        for (int i = 0; i < stageBlobsList.size(); i++) {
+                            Blobs blob = stageBlobsList.get(i);
                             if (blob.getBlobName().equals(Repository.CWD + secondArg)) {
                                 // 该文件被commit过，标记为删除，在下一次commit时删除
-                                String[] parts = secondArg.split("/");
-                                String realFileName = parts[parts.length - 1]; // 获取真正的文件名
-                                int lastIndex = realFileName.lastIndexOf('.');
-                                String fileNameWithoutExtension = realFileName.substring(0, lastIndex);
-                                File removeFile = Utils.join(Repository.REMOVAL_AREA, fileNameWithoutExtension + ".bin");
-                                Utils.writeObject(removeFile, blob);
-                                rmFlag = true;
+                                stageRemoveFile.delete();
                             }
                         }
-                        if (rmFlag) { // rm fileName 的 file 即不在STAGE_AREA也不在headCommit中，将报错
-                            Blobs.deleteStageFile(secondArg, "rm");
-                        }
-                        File thisFile = Utils.join(Repository.CWD, secondArg);
-                        if (thisFile.exists() && rmFlag) {  // 在工作目录下删除文件
-                            thisFile.delete();
-                        } else {
-                            throw new GitletException("No reason to remove the file.");
+                        // 如果currentCommit中有对应的文件则将其放入REMOVE_AREA中下一次删去
+                        Blobs removeBlob = new Blobs(Repository.CWD + secondArg);
+                        rmFlag = Blobs.trackFiles(currentCommit.getBlobArray(), removeBlob);
+                        if (rmFlag) {
+                            Utils.writeObject(removeFile, removeBlob);
+                            File thisFile = Utils.join(Repository.CWD, secondArg);
+                            if (thisFile.exists() && rmFlag) {  // 在工作目录下删除文件
+                                thisFile.delete();
+                            } else {
+                                // rm fileName 的 file 即不在STAGE_AREA也不在headCommit中，将报错
+                                throw new GitletException("No reason to remove the file.");
+                            }
                         }
                     }
                     break;
@@ -174,11 +183,20 @@ public class Main {
                 case "status":
                     List<String> stageFileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
                     List<String> removeFileNames = Utils.plainFilenamesIn(Repository.REMOVAL_AREA);
+                    List<String> branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
                     System.out.println("=== Branches ===");
+                    System.out.println("*" + currentCommit.getBranch());    //首先输出当前commit的名称，并带上*作为标识
+                    for (String branchFileName : branchFileNames) {
+                        File stageFile = new File(Repository.HEAD_AREA + "/" + branchFileName);
+                        Commit branchCommit = Utils.readObject(stageFile, Commit.class);
+                        String branchName = branchCommit.getBranch(); // 获取真正的文件名
+                        if (!branchName.equals(currentCommit.getBranch())) {
+                            System.out.println(branchName);
+                        }
+                    }
                     System.out.println();
                     System.out.println("=== Staged Files ===");
                     for (String stageFileName : stageFileNames) {
-//                        System.out.println(stageFileName);
                         File stageFile = new File(Repository.STAGE_AREA + "/" + stageFileName);
                         Blobs blob = Utils.readObject(stageFile, Blobs.class);
                         String[] parts = blob.getBlobName().split("/");
@@ -206,15 +224,55 @@ public class Main {
                     } else {
                         if (args.length == 2) {
                             secondArg = args[1];
+                            boolean fileExist = false;
                             // 1. java gitlet.Main checkout -- [file name]
-                            Checkout.checkoutFile(currentCommit, secondArg);
+                            fileExist = Checkout.checkoutFile(currentCommit, secondArg);
+                            // 3. java gitlet.Main checkout [branch name]
+                            if (!fileExist) {
+                                if (currentCommit.getBranch().equals(secondArg)) {
+                                    throw new GitletException("No need to checkout the current branch.");
+                                } else {
+                                    branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
+                                    boolean branchExist = false;
+                                    for (String branchFileName : branchFileNames) {
+                                        if (branchFileName.equals(secondArg + ".bin")) {
+                                            branchExist = true;
+                                            File branchFile = new File(Repository.HEAD_AREA + "/" + branchFileName);
+                                            Commit branchCommit = Utils.readObject(branchFile, Commit.class);
+                                            // 将当前branch写回HEAD_AREA中保留此branch
+                                            File currentBranchFile = new File(Repository.HEAD_AREA + "/" + currentCommit.getBranch() + ".bin");
+                                            if (currentBranchFile.exists()) {
+                                                currentBranchFile.delete();
+                                            }
+                                            currentCommit.writeCommit(Repository.HEAD_AREA, currentCommit.getBranch());
+                                            // 切换到新branch
+                                            currentCommit = branchCommit;
+                                            headCommit.delete();
+                                            currentCommit.writeCommit(Repository.HEAD_AREA, "head");
+                                        }
+                                    }
+                                    if (!branchExist) {
+                                        throw new GitletException("No such branch exists.");
+                                    }
+                                }
+                            }
+
                         } else if (args.length == 3) {
                             // 2. java gitlet.Main checkout [commit id] -- [file name]
                             String commitID = args[1];
                             String fileName = args[2];
                             Checkout.checkoutCommitFile(currentCommit, fileName, commitID);
                         }
-                        // 3. java gitlet.Main checkout [branch name]
+
+                    }
+                    break;
+                case "branch":
+                    if (args.length < 2) {
+                        throw new GitletException("Please enter new branch's name.");
+                    } else {
+                        String branchName = args[1];
+                        Commit newBranchHead = currentCommit.newBranch(branchName);
+                        newBranchHead.writeCommit(Repository.HEAD_AREA, branchName);
                     }
                     break;
                 default:

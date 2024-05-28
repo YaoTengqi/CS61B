@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class Checkout {
-    public static void checkoutFile(Commit currentCommit, String fileName) throws IOException {
+    public static boolean checkoutFile(Commit currentCommit, String fileName) throws IOException {
         // 1. java gitlet.Main checkout -- [file name]
         List<Blobs> previousBlobArray = currentCommit.getBlobArray();
         String checkoutFileName = Repository.CWD + fileName;
@@ -31,6 +31,7 @@ public class Checkout {
                 throw new GitletException("File does not exist in that commit.");
             }
         }
+        return fileExists;
     }
 
     public static void checkoutCommitFile(Commit currentCommit, String fileName, String commitID) throws IOException {
