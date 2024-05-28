@@ -50,7 +50,7 @@ public class Main {
                     if (secondArg == null) {
                         throw new GitletException("Please enter filename.");
                     } else {
-                        String addFileName = Repository.CWD + secondArg;
+                        String addFileName = Repository.WORK_STAGE + secondArg;
                         File addFile = new File(addFileName);
                         if (!addFile.exists()) {
                             throw new GitletException(addFile + " does not exist.");
@@ -77,8 +77,8 @@ public class Main {
                         String currentBranch = currentCommit.getBranch();
                         Commit newCommit = new Commit(currentBranch, secondArg, currentCommitBlobArray, currentCommit);
                         // TODO: 处理previousBlobArray的数据问题
-                        boolean stageEqualWithCurrent = Commit.updateBlobArray(newCommit, previousBlobArray, stageFileNames, "STAGE_AREA");
                         boolean removalEqualWithCurrent = Commit.updateBlobArray(newCommit, previousBlobArray, removeFileNames, "REMOVAL_AREA");
+                        boolean stageEqualWithCurrent = Commit.updateBlobArray(newCommit, newCommit.getBlobArray(), stageFileNames, "STAGE_AREA");
                         if (!(stageEqualWithCurrent && removalEqualWithCurrent)) {
 //                            Commit newCommit = new Commit(secondArg, previousBlobArray, currentCommit);
                             newCommit.writeCommit(Repository.COMMIT_AREA, newCommit.getCommitID()); // 将commit写入COMMIT_AREA
@@ -112,17 +112,17 @@ public class Main {
                         boolean rmFlag = false;
                         for (int i = 0; i < stageBlobsList.size(); i++) {
                             Blobs blob = stageBlobsList.get(i);
-                            if (blob.getBlobName().equals(Repository.CWD + secondArg)) {
+                            if (blob.getBlobName().equals(Repository.WORK_STAGE + secondArg)) {
                                 // 该文件被commit过，标记为删除，在下一次commit时删除
                                 stageRemoveFile.delete();
                             }
                         }
                         // 如果currentCommit中有对应的文件则将其放入REMOVE_AREA中下一次删去
-                        Blobs removeBlob = new Blobs(Repository.CWD + secondArg);
+                        Blobs removeBlob = new Blobs(Repository.WORK_STAGE + secondArg);
                         rmFlag = Blobs.trackFiles(currentCommit.getBlobArray(), removeBlob);
                         if (rmFlag) {
                             Utils.writeObject(removeFile, removeBlob);
-                            File thisFile = Utils.join(Repository.CWD, secondArg);
+                            File thisFile = Utils.join(Repository.WORK_STAGE, secondArg);
                             if (thisFile.exists() && rmFlag) {  // 在工作目录下删除文件
                                 thisFile.delete();
                             } else {
