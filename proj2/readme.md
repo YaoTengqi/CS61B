@@ -24,10 +24,10 @@ Main文件是整个项目的入口，他根据输入的args[]参数识别命令�
 |              public **Blobs**(String fileName)               |      /       |                 根据给定的文件名生成blob对象                 |
 |   public static byte[] **readFileToBytes**(File blob_file)   |    byte[]    |         给定文件对象，读取文件中的内容到byte[]后返回         |
 |     public static String **calculateID**(byte[] content)     |    String    |             根据文件数据计算出相应的SHA-1哈希ID              |
-|          public boolean **equals**(Blobs... blobs)           |   boolean    |                      对比Blobs是否相同                       |
+| public static boolean trackFiles(List<Blobs> previousBlobList, Blobs currentBlob) |   boolean    | 对比两个BlobsList是否一致，即检查上一个commit的BlobsList与当前要添加的blob是否一致 |
 | public static List<Blobs\> returnBlobsList(List<String\> fileNames, File workStage) | List<Blobs\> |                        返回所有Blobs                         |
-| public static void **deleteStageFile**(File createFile, String fileName) |      /       |                    删除STAGE_AREA中的blob                    |
-| public static Blobs[] updateBlobArray(Blobs[] previousBlobArray, List<String> fileNames,) |   Blobs[]    | 处理List<String>中的fileNames并根据内容进行更新，返回更新后的blobArray |
+| public static boolean deleteStageFile(String fileName, String command, Blobs blobFile) |   boolean    |                删除或者添加STAGE_AREA中的blob                |
+|                                                              |              |                                                              |
 
 
 
