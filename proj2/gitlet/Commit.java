@@ -115,9 +115,9 @@ public class Commit implements Serializable {
      *
      * @param fileNames
      */
-    public static void clearStageArea(List<String> fileNames) {
+    public static void clearStageArea(List<String> fileNames, File clear_stage) {
         for (String fileName : fileNames) {
-            File deletedFile = Utils.join(Repository.STAGE_AREA, fileName);
+            File deletedFile = Utils.join(clear_stage, fileName);
             deletedFile.delete();
         }
     }

@@ -85,13 +85,13 @@ public class Main {
                             headCommit.delete();
                             newCommit.writeCommit(Repository.HEAD_AREA, "head");// 头指针指向最新的commit
                         } else {
-                            Commit.clearStageArea(stageFileNames);
-                            Commit.clearStageArea(removeFileNames);
+                            Commit.clearStageArea(stageFileNames, Repository.STAGE_AREA);
+                            Commit.clearStageArea(removeFileNames, Repository.REMOVAL_AREA);
                             throw new GitletException("The commit is same with previous.");
                         }
                         // 清空缓存区
-                        Commit.clearStageArea(stageFileNames);
-                        Commit.clearStageArea(removeFileNames);
+                        Commit.clearStageArea(stageFileNames, Repository.STAGE_AREA);
+                        Commit.clearStageArea(removeFileNames, Repository.REMOVAL_AREA);
                     }
                     break;
                 case "rm":
