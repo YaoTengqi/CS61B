@@ -219,7 +219,7 @@ public class Main {
                     for (String workStageFile : workStageFileNames) {
                         Blobs blob = new Blobs(Repository.WORK_STAGE + "/" + workStageFile);
                         int modifyFlag = Blobs.trackFiles(currentCommit.getBlobArray(), blob);
-                        if (modifyFlag == 2) {
+                        if (modifyFlag == 2 || modifyFlag == 0) {
                             int lastIndex = workStageFile.lastIndexOf('.');
                             String fileNameWithoutExtension = workStageFile.substring(0, lastIndex);
                             File workStageBin = Utils.join(Repository.STAGE_AREA, fileNameWithoutExtension + ".bin");
@@ -228,11 +228,11 @@ public class Main {
                                 if (!stageBlob.getBlobID().equals(blob.getBlobID())) {
                                     System.out.println(workStageFile);
                                 }
+                            } else if (modifyFlag == 0) {
+                                untrackedFileNames.add(workStageFile);
                             }
                         } else if (modifyFlag == 1) {
                             System.out.println(workStageFile);
-                        } else if (modifyFlag == 0) {
-                            untrackedFileNames.add(workStageFile);
                         }
                     }
                     System.out.println();
@@ -281,7 +281,8 @@ public class Main {
                             // 2. java gitlet.Main checkout [commit id] -- [file name]
                             String commitID = args[1];
                             String fileName = args[2];
-                            Checkout.checkoutCommitFile(currentCommit, fileName, commitID);
+                            boolean resetFlag = false;
+                            Checkout.checkoutCommitFile(currentCommit, fileName, commitID, resetFlag);
                         }
 
                     }
@@ -316,6 +317,17 @@ public class Main {
                         if (!branchExist) {
                             throw new GitletException("A branch with that name does not exist.");
                         }
+                    }
+                    break;
+                case "reset":
+                    if (args.length < 2) {
+                        throw new GitletException("Please enter branch's name.");
+                    } else {
+                        String commitID = args[1];
+                        currentCommit = Checkout.resetCommitFile(currentCommit, commitID);
+                        //切换头指针
+                        headCommit.delete();
+                        currentCommit.writeCommit(Repository.HEAD_AREA, "head");
                     }
                     break;
                 default:

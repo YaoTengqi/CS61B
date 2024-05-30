@@ -28,7 +28,7 @@ public class Repository {
     /**
      * The .gitlet directory.
      */
-    public static final File WORK_STAGE = new File(CWD + "/myTest/"); //专门用于测试的文件夹
+    public static final File WORK_STAGE = new File(CWD + "/myTest"); //专门用于测试的文件夹
     public static final File GITLET_DIR = join(WORK_STAGE, ".gitlet");
     public static final File STAGE_AREA = join(GITLET_DIR, "stage_area");
     public static final File COMMIT_AREA = join(GITLET_DIR, "commit_area");
