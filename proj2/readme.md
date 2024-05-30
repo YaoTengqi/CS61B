@@ -82,6 +82,20 @@ Repository负责对文件夹进行操作
 | public static void makeStageArea()  |   /    | 创建STAGE_AREA文件夹  |
 | public static void makeCommitArea() |   /    | 创建COMMIT_AREA文件夹 |
 
+
+
+### Checkout
+
+专门处理checkout相关的操作
+
+#### 函数
+
+|                            函数名                            | 返回值 |                             描述                             |
+| :----------------------------------------------------------: | :----: | :----------------------------------------------------------: |
+| public static boolean checkUntracked(Commit currentCommit, String fileName) |   /    |               检查fileName是否为未被追踪的文件               |
+| public static boolean checkoutFile(Commit currentCommit, String fileName) |   /    |                 回退到当前current的file版本                  |
+| public static Commit checkoutCommitFile(Commit currentCommit, String fileName, String commitID, boolean resetFlag) |   /    | 回退到特定commit版本(通过commitID查询)的指定file，会调用`checkoutFile()` |
+
 ## Algorithms
 
 ### Init
@@ -92,7 +106,69 @@ Repository负责对文件夹进行操作
 
 ## Persistence
 
-
+.
+├── gitlet
+│   ├── Blobs.class
+│   ├── Blobs.java
+│   ├── Checkout.class
+│   ├── Checkout.java
+│   ├── Commit.class
+│   ├── Commit.java
+│   ├── Dumpable.class
+│   ├── Dumpable.java
+│   ├── DumpObj.class
+│   ├── DumpObj.java
+│   ├── GitletException.class
+│   ├── GitletException.java
+│   ├── Main.class
+│   ├── Main.java
+│   ├── Makefile
+│   ├── Repository.class
+│   ├── Repository.java
+│   ├── sentinel
+│   ├── test.txt
+│   ├── Utils$1.class
+│   ├── Utils.class
+│   └── Utils.java
+├── gitlet-design.md
+├── Makefile
+├── myTest
+│   ├── dangerous.txt
+│   ├── lxx.txt
+│   └── other.txt
+├── pom.xml
+├── readme.md
+├── target
+│   ├── classes
+│   │   └── gitlet
+│   │       ├── Blobs.class
+│   │       ├── Checkout.class
+│   │       ├── Commit.class
+│   │       ├── Dumpable.class
+│   │       ├── DumpObj.class
+│   │       ├── GitletException.class
+│   │       ├── Main.class
+│   │       ├── Repository.class
+│   │       ├── Utils$1.class
+│   │       └── Utils.class
+│   └── generated-sources
+│       └── annotations
+└── testing
+    ├── Makefile
+    ├── runner.py
+    ├── samples
+    │   ├── definitions.inc
+    │   ├── test01-init.in
+    │   ├── test02-basic-checkout.in
+    │   ├── test03-basic-log.in
+    │   └── test04-prev-checkout.in
+    ├── src
+    │   ├── notwug.txt
+    │   └── wug.txt
+    ├── staff-runner.py
+    ├── student_tests
+    │   └── definitions.inc
+    └── tester.py
 
 ## IDEAL
 

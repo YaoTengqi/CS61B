@@ -8,6 +8,13 @@ import java.util.List;
 
 
 public class Checkout {
+    /**
+     * 检查fileName是否为未被追踪的文件
+     * @param currentCommit
+     * @param fileName
+     * @return
+     * @throws IOException
+     */
     public static boolean checkUntracked(Commit currentCommit, String fileName) throws IOException {
         List<String> workStageFileNames = Utils.plainFilenamesIn(Repository.WORK_STAGE);
         List<String> untrackedFileNames = new ArrayList<>();
