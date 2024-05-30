@@ -248,39 +248,35 @@ public class Main {
                     } else {
                         if (args.length == 2) {
                             secondArg = args[1];
-                            boolean fileExist = false;
-                            // 1. java gitlet.Main checkout -- [file name]
-                            fileExist = Checkout.checkoutFile(currentCommit, secondArg);
                             // 3. java gitlet.Main checkout [branch name]
-                            if (!fileExist) {
-                                if (currentCommit.getBranch().equals(secondArg)) {
-                                    throw new GitletException("No need to checkout the current branch.");
-                                } else {
-                                    branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
-                                    boolean branchExist = false;
-                                    for (String branchFileName : branchFileNames) {
-                                        if (branchFileName.equals(secondArg + ".bin")) {
-                                            branchExist = true;
-                                            File branchFile = new File(Repository.HEAD_AREA + "/" + branchFileName);
-                                            Commit branchCommit = Utils.readObject(branchFile, Commit.class);
-                                            // 将当前branch写回HEAD_AREA中保留此branch
-                                            File currentBranchFile = new File(Repository.HEAD_AREA + "/" + currentCommit.getBranch() + ".bin");
-                                            if (currentBranchFile.exists()) {
-                                                currentBranchFile.delete();
-                                            }
-                                            currentCommit.writeCommit(Repository.HEAD_AREA, currentCommit.getBranch());
-                                            // 切换到新branch
-                                            currentCommit = branchCommit;
-                                            headCommit.delete();
-                                            currentCommit.writeCommit(Repository.HEAD_AREA, "head");
+                            if (currentCommit.getBranch().equals(secondArg)) {
+                                throw new GitletException("No need to checkout the current branch.");
+                            } else {
+                                branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
+                                boolean branchExist = false;
+                                for (String branchFileName : branchFileNames) {
+                                    if (branchFileName.equals(secondArg + ".bin")) {
+                                        branchExist = true;
+                                        File branchFile = new File(Repository.HEAD_AREA + "/" + branchFileName);
+                                        Commit branchCommit = Utils.readObject(branchFile, Commit.class);
+                                        // 将当前branch写回HEAD_AREA中保留此branch
+                                        File currentBranchFile = new File(Repository.HEAD_AREA + "/" + currentCommit.getBranch() + ".bin");
+                                        if (currentBranchFile.exists()) {
+                                            currentBranchFile.delete();
                                         }
-                                    }
-                                    if (!branchExist) {
-                                        throw new GitletException("No such branch exists.");
+                                        currentCommit.writeCommit(Repository.HEAD_AREA, currentCommit.getBranch());
+                                        // 切换到新branch
+                                        currentCommit = branchCommit;
+                                        headCommit.delete();
+                                        currentCommit.writeCommit(Repository.HEAD_AREA, "head");
                                     }
                                 }
+                                if (!branchExist) {
+                                    // 1. java gitlet.Main checkout -- [file name]
+                                    Checkout.checkoutFile(currentCommit, secondArg);
+                                    throw new GitletException("No such branch exists.");
+                                }
                             }
-
                         } else if (args.length == 3) {
                             // 2. java gitlet.Main checkout [commit id] -- [file name]
                             String commitID = args[1];
@@ -297,6 +293,29 @@ public class Main {
                         String branchName = args[1];
                         Commit newBranchHead = currentCommit.newBranch(branchName);
                         newBranchHead.writeCommit(Repository.HEAD_AREA, branchName);
+                    }
+                    break;
+                case "rm-branch":
+                    if (args.length < 2) {
+                        throw new GitletException("Please enter branch's name.");
+                    } else {
+                        String branchName = args[1];
+                        boolean branchExist = false;
+                        if (currentCommit.getBranch().equals(branchName)) {
+                            throw new GitletException("Cannot remove the current branch.");
+                        }
+                        branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
+                        for (String branchFileName : branchFileNames) {
+                            if (branchFileName.equals(branchName + ".bin")) {
+                                File branchFile = new File(Repository.HEAD_AREA + "/" + branchName + ".bin");
+                                branchFile.delete();
+                                branchExist = true;
+                                break;
+                            }
+                        }
+                        if (!branchExist) {
+                            throw new GitletException("A branch with that name does not exist.");
+                        }
                     }
                     break;
                 default:
