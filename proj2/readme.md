@@ -96,11 +96,32 @@ Repository负责对文件夹进行操作
 | public static boolean checkoutFile(Commit currentCommit, String fileName) |   /    |                 回退到当前current的file版本                  |
 | public static Commit checkoutCommitFile(Commit currentCommit, String fileName, String commitID, boolean resetFlag) |   /    | 回退到特定commit版本(通过commitID查询)的指定file，会调用`checkoutFile()` |
 
-## Algorithms
 
-### Init
 
-- 
+### Merge
+
+**Modified or Add in Both branches**
+
+![mergeModifiedPic](source/mergeModifiedPic.jpeg)
+
+**Add and Remove**
+
+![Add and Remove](source/AddandRemove.jpeg)
+
+
+
+#### 函数
+
+|                            函数名                            |    返回值     |                             描述                             |
+| :----------------------------------------------------------: | :-----------: | :----------------------------------------------------------: |
+|              `findSplitAncestor(master, other)`              |   `Commit`    |   找到两个branch的最近祖先节点(**Latest ancestor commit**)   |
+|          `findSameBlob(currentCommit, otherCommit)`          | `List<Blobs>` | 找到两个`commit`的同名`BlobList`同时得到不同名的`BlobList`，分别为`currentDifferentBlobList`以及`otherDifferentBlobList` |
+| `sameBlobListTraversal(List<Blobs> mergeBlobList, List<Blobs> sameBlobList, Commit ancestor)` |       /       | 对同名`Blob`进行处理，并处理后的`Blob`写入`mergeBlobList`中  |
+| `addDifferentBlobs(List<Blobs> mergeBlobList, List<Blobs> currentAddBlobList, List<Blobs> otherAddBlobList)` |       /       |    对两个branch中不同的addBlob直接添加到`mergeBlobList`中    |
+| `removeDifferentBlobs(List<Blobs> mergeBlobList, List<Blobs> currentRemoveBlobList, List<Blobs> otherRemoveBlobList)` |       /       |  对两个branch中不同的removeBlob直接从`mergeBlobList`中移除   |
+|                                                              |               |                                                              |
+|                                                              |               |                                                              |
+|                                                              |               |                                                              |
 
 
 
@@ -172,6 +193,6 @@ Repository负责对文件夹进行操作
 
 ## IDEAL
 
-1. public static boolean **updateBlobArray**(Commit updateCommit, List<Blobs\> previousBlobArray, List<String\> fileNames, String command)函数中，需要一个tempBlobArray来操作存储变化的新BlobArray，因为直接令tempBlobArray = previousBlobArray的话他们俩指向的是同一块地址，操作tempBlobArray时previousBlobArray指向的内容也变换导致所有commit的BlobArray也随之变换出现问题。
+1. `public static boolean updateBlobArray(Commit updateCommit, List<Blobs> previousBlobArray, List<String> fileNames, String command)`函数中，需要一个tempBlobArray来操作存储变化的新BlobArray，因为直接令tempBlobArray = previousBlobArray的话他们俩指向的是同一块地址，操作tempBlobArray时previousBlobArray指向的内容也变换导致所有commit的BlobArray也随之变换出现问题。
 2. 用shortID查询commitID完成相应的`java gitlet.Main checkout [commit id] -- [file name]`功能会影响速度，Git的解决办法是把Blobs们依据**哈希值**的前两位建立文件夹进行存储，查找时只需算出哈希值就可以快速查找(O(1))。
 
