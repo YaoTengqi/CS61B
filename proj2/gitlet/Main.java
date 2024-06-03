@@ -7,6 +7,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 
 /**
@@ -23,6 +24,8 @@ public class Main {
     public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
         File headCommit = new File(Repository.HEAD_AREA + "/head.bin");
         Commit currentCommit = null;
+        List<String> stageFileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
+        List<String> removeFileNames = Utils.plainFilenamesIn(Repository.REMOVAL_AREA);
         if (headCommit.exists()) {
             currentCommit = Utils.readObject(headCommit, Commit.class);
         }
@@ -32,11 +35,11 @@ public class Main {
             String firstArg = args[0];
             switch (firstArg) {
                 case "init":
-//                    Repository.makeSetup();
-//                    Repository.makeStageArea();
-//                    Repository.makeCommitArea();
-//                    Repository.makeHeadArea();
-//                    Repository.makeRemovalArea();
+                    Repository.makeSetup();
+                    Repository.makeStageArea();
+                    Repository.makeCommitArea();
+                    Repository.makeHeadArea();
+                    Repository.makeRemovalArea();
                     String masterBranch = "master";
                     String commitMessage = "This is the first commit!";
                     Commit firstCommit = new Commit(masterBranch, commitMessage, null, null);
@@ -50,7 +53,7 @@ public class Main {
                     if (secondArg == null) {
                         throw new GitletException("Please enter filename.");
                     } else {
-                        String addFileName = Repository.WORK_STAGE + secondArg;
+                        String addFileName = Repository.WORK_STAGE + "/" + secondArg;
                         File addFile = new File(addFileName);
                         if (!addFile.exists()) {
                             throw new GitletException(addFile + " does not exist.");
@@ -70,8 +73,6 @@ public class Main {
                         throw new GitletException("Please enter message.");
                     } else {
                         secondArg = args[1];
-                        List<String> stageFileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
-                        List<String> removeFileNames = Utils.plainFilenamesIn(Repository.REMOVAL_AREA);
                         List<Blobs> previousBlobArray = currentCommit.getBlobArray();
                         List<Blobs> currentCommitBlobArray = new ArrayList<>();
                         String currentBranch = currentCommit.getBranch();
@@ -181,8 +182,7 @@ public class Main {
                     }
                     break;
                 case "status":
-                    List<String> stageFileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
-                    List<String> removeFileNames = Utils.plainFilenamesIn(Repository.REMOVAL_AREA);
+
                     List<String> branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
                     List<String> untrackedFileNames = new ArrayList<>();
                     System.out.println("=== Branches ===");
@@ -301,21 +301,10 @@ public class Main {
                         throw new GitletException("Please enter branch's name.");
                     } else {
                         String branchName = args[1];
-                        boolean branchExist = false;
-                        if (currentCommit.getBranch().equals(branchName)) {
-                            throw new GitletException("Cannot remove the current branch.");
-                        }
                         branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
-                        for (String branchFileName : branchFileNames) {
-                            if (branchFileName.equals(branchName + ".bin")) {
-                                File branchFile = new File(Repository.HEAD_AREA + "/" + branchName + ".bin");
-                                branchFile.delete();
-                                branchExist = true;
-                                break;
-                            }
-                        }
-                        if (!branchExist) {
-                            throw new GitletException("A branch with that name does not exist.");
+                        File branchFile = Checkout.findBranch(currentCommit, branchName, branchFileNames);
+                        if (branchFile.exists()) {
+                            branchFile.delete();
                         }
                     }
                     break;
@@ -328,6 +317,28 @@ public class Main {
                         //切换头指针
                         headCommit.delete();
                         currentCommit.writeCommit(Repository.HEAD_AREA, "head");
+                    }
+                    break;
+                case "merge":
+                    if (args.length < 2) {
+                        throw new GitletException("Please enter branch's name.");
+                    } else {
+                        String branchName = args[1];
+                        branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
+                        File branchFile = Checkout.findBranch(currentCommit, branchName, branchFileNames);
+                        Commit otherCommit = Utils.readObject(branchFile, Commit.class);
+                        Commit ancestor = Merge.findSplitAncestor(currentCommit, otherCommit);
+                        Set<String> sameNameBlobName = Merge.findSameBlob(currentCommit, otherCommit);
+                        List<Blobs> mergeBlobList = Merge.sameBlobListTraversal(sameNameBlobName, ancestor, currentCommit, otherCommit);
+                        String mergeMessage = "Merged " + otherCommit.getBranch() + " into " + currentCommit.getBranch() + ".";
+//                        Merged [given branch name] into [current branch name].
+                        mergeCommit newCommit = new mergeCommit(currentCommit.getBranch(), mergeMessage, mergeBlobList, currentCommit.getParent(), otherCommit.getParent());
+                        newCommit.writeCommit(Repository.COMMIT_AREA, newCommit.getCommitID()); // 将commit写入COMMIT_AREA
+                        headCommit.delete();
+                        newCommit.writeCommit(Repository.HEAD_AREA, "head");// 头指针指向最新的commit
+                        // 清空缓存区
+                        Commit.clearStageArea(stageFileNames, Repository.STAGE_AREA);
+                        Commit.clearStageArea(removeFileNames, Repository.REMOVAL_AREA);
                     }
                     break;
                 default:

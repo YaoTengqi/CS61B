@@ -47,6 +47,19 @@ public class Blobs implements Serializable {
     }
 
     /**
+     * 创建一个新的Blobs，用于对原blob进行修改等操作
+     * @param fileName
+     * @param content
+     * @throws IOException
+     */
+    public Blobs(String fileName, byte[] content) throws IOException {
+        this.content = content;
+        this.blobName = fileName;
+        this.blobID = Utils.sha1(this.blobName, this.content);
+
+    }
+
+    /**
      * 对比两个BlobsList是否一致，即检查上一个commit的BlobsList与当前要添加的blob是否一致
      *
      * @param previousBlobList

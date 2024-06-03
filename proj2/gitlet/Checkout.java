@@ -10,6 +10,7 @@ import java.util.List;
 public class Checkout {
     /**
      * 检查fileName是否为未被追踪的文件
+     *
      * @param currentCommit
      * @param fileName
      * @return
@@ -124,5 +125,34 @@ public class Checkout {
             currentCommit = checkoutCommitFile(currentCommit, "/" + workFileName, commitID, resetFlag);
         }
         return currentCommit;
+    }
+
+    /**
+     * 查找该branch名的分支是否存在
+     *
+     * @param currentCommit
+     * @param branchName
+     * @param branchFileNames
+     * @return
+     */
+    public static File findBranch(Commit currentCommit, String branchName, List<String> branchFileNames) {
+        boolean branchExist = false;
+        File branchFile = null;
+        if (currentCommit.getBranch().equals(branchName)) {
+            throw new GitletException("Cannot remove the current branch.");
+        }
+        branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
+        for (String branchFileName : branchFileNames) {
+            if (branchFileName.equals(branchName + ".bin")) {
+                branchFile = new File(Repository.HEAD_AREA + "/" + branchName + ".bin");
+//                branchFile.delete();
+                branchExist = true;
+                break;
+            }
+        }
+        if (!branchExist) {
+            throw new GitletException("A branch with that name does not exist.");
+        }
+        return branchFile;
     }
 }

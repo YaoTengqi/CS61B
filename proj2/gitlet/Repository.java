@@ -28,18 +28,17 @@ public class Repository {
     /**
      * The .gitlet directory.
      */
-    public static final File WORK_STAGE = new File(CWD + "/myTest"); //专门用于测试的文件夹
+//    public static final File WORK_STAGE = new File(CWD + "/myTest"); //专门用于测试的文件夹
+    public static final File WORK_STAGE = CWD; //专门用于测试的文件夹
     public static final File GITLET_DIR = join(WORK_STAGE, ".gitlet");
     public static final File STAGE_AREA = join(GITLET_DIR, "stage_area");
     public static final File COMMIT_AREA = join(GITLET_DIR, "commit_area");
     public static final File HEAD_AREA = join(GITLET_DIR, "head_area");
     public static final File REMOVAL_AREA = join(GITLET_DIR, "removal_area");
 
-    /* TODO: fill in the rest of this class. */
     public static void makeSetup() {
         if (!GITLET_DIR.exists()) {
             GITLET_DIR.mkdir();
-            // TODO: execute the first commit
         } else {
             throw new GitletException("A Gitlet version-control system already exists in the current directory.");
         }
