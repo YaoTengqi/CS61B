@@ -1,6 +1,5 @@
 package gitlet;
 
-import jdk.jshell.execution.Util;
 
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
@@ -19,7 +18,7 @@ public class Main {
      * Usage: java gitlet.Main ARGS, where ARGS contains
      * <COMMAND> <OPERAND1> <OPERAND2> ...
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         File headCommit = new File(Repository.HEAD_AREA + "/head.bin");
         Commit currentCommit = null;
         List<String> stageFileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
@@ -50,7 +49,11 @@ public class Main {
                     } catch (NoSuchAlgorithmException e) {
                         throw new RuntimeException(e);
                     }
-                    firstCommit.writeCommit(Repository.HEAD_AREA, "head");
+                    try {
+                        firstCommit.writeCommit(Repository.HEAD_AREA, "head");
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     break;
                 case "add":
                     if (!Repository.STAGE_AREA.exists()) {
@@ -65,7 +68,11 @@ public class Main {
                         if (!addFile.exists()) {
                             throw new GitletException(addFile + " does not exist.");
                         } else {
-                            Blobs.addBlobs(currentCommit, addFileName);
+                            try {
+                                Blobs.addBlobs(currentCommit, addFileName);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
                         }
                     }
                     break;
@@ -98,9 +105,17 @@ public class Main {
                         boolean stageEqualWithCurrent = Commit.updateBlobArray(newCommit, newCommit.getBlobArray(), stageFileNames, "STAGE_AREA");
                         if (!(stageEqualWithCurrent && removalEqualWithCurrent)) {
 //                            Commit newCommit = new Commit(secondArg, previousBlobArray, currentCommit);
-                            newCommit.writeCommit(Repository.COMMIT_AREA, newCommit.getCommitID()); // 将commit写入COMMIT_AREA
+                            try {
+                                newCommit.writeCommit(Repository.COMMIT_AREA, newCommit.getCommitID()); // 将commit写入COMMIT_AREA
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
                             headCommit.delete();
-                            newCommit.writeCommit(Repository.HEAD_AREA, "head");// 头指针指向最新的commit
+                            try {
+                                newCommit.writeCommit(Repository.HEAD_AREA, "head");// 头指针指向最新的commit
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
                         } else {
                             Commit.clearStageArea(stageFileNames, Repository.STAGE_AREA);
                             Commit.clearStageArea(removeFileNames, Repository.REMOVAL_AREA);
@@ -135,7 +150,12 @@ public class Main {
                             }
                         }
                         // 如果currentCommit中有对应的文件则将其放入REMOVE_AREA中下一次删去
-                        Blobs removeBlob = new Blobs(String.valueOf(Utils.join(Repository.WORK_STAGE, secondArg)));
+                        Blobs removeBlob = null;
+                        try {
+                            removeBlob = new Blobs(String.valueOf(Utils.join(Repository.WORK_STAGE, secondArg)));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                         rmFlag = Blobs.trackFiles(currentCommit.getBlobArray(), removeBlob);
                         if (rmFlag == 1) {
                             Utils.writeObject(removeFile, removeBlob);
@@ -232,7 +252,12 @@ public class Main {
                     System.out.println("=== Modifications Not Staged For Commit ===");
                     List<String> workStageFileNames = Utils.plainFilenamesIn(Repository.WORK_STAGE);
                     for (String workStageFile : workStageFileNames) {
-                        Blobs blob = new Blobs(Repository.WORK_STAGE + workStageFile);
+                        Blobs blob = null;
+                        try {
+                            blob = new Blobs(Repository.WORK_STAGE + workStageFile);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                         int modifyFlag = Blobs.trackFiles(currentCommit.getBlobArray(), blob);
                         if (modifyFlag == 2 || modifyFlag == 0) {
                             int lastIndex = workStageFile.lastIndexOf('.');
@@ -279,11 +304,19 @@ public class Main {
                                         if (currentBranchFile.exists()) {
                                             currentBranchFile.delete();
                                         }
-                                        currentCommit.writeCommit(Repository.HEAD_AREA, currentCommit.getBranch());
+                                        try {
+                                            currentCommit.writeCommit(Repository.HEAD_AREA, currentCommit.getBranch());
+                                        } catch (IOException e) {
+                                            throw new RuntimeException(e);
+                                        }
                                         // 切换到新branch
                                         currentCommit = branchCommit;
                                         headCommit.delete();
-                                        currentCommit.writeCommit(Repository.HEAD_AREA, "head");
+                                        try {
+                                            currentCommit.writeCommit(Repository.HEAD_AREA, "head");
+                                        } catch (IOException e) {
+                                            throw new RuntimeException(e);
+                                        }
                                     }
                                 }
                                 if (!branchExist) {
@@ -293,13 +326,21 @@ public class Main {
                         } else if (args.length == 3) {
                             // 1. java gitlet.Main checkout -- [file name]
                             String fileName = args[2];
-                            Checkout.checkoutFile(currentCommit, fileName);
+                            try {
+                                Checkout.checkoutFile(currentCommit, fileName);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
                         } else if (args.length == 4) {
                             // 2. java gitlet.Main checkout [commit id] -- [file name]
                             String commitID = args[1];
                             String fileName = args[3];
                             boolean resetFlag = false;
-                            Checkout.checkoutCommitFile(currentCommit, fileName, commitID, resetFlag);
+                            try {
+                                Checkout.checkoutCommitFile(currentCommit, fileName, commitID, resetFlag);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
                         }
 
                     }
@@ -310,7 +351,11 @@ public class Main {
                     } else {
                         String branchName = args[1];
                         Commit newBranchHead = currentCommit.newBranch(branchName);
-                        newBranchHead.writeCommit(Repository.HEAD_AREA, branchName);
+                        try {
+                            newBranchHead.writeCommit(Repository.HEAD_AREA, branchName);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                     break;
                 case "rm-branch":
@@ -330,10 +375,18 @@ public class Main {
                         throw new GitletException("Please enter branch's name.");
                     } else {
                         String commitID = args[1];
-                        currentCommit = Checkout.resetCommitFile(currentCommit, commitID);
+                        try {
+                            currentCommit = Checkout.resetCommitFile(currentCommit, commitID);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                         //切换头指针
                         headCommit.delete();
-                        currentCommit.writeCommit(Repository.HEAD_AREA, "head");
+                        try {
+                            currentCommit.writeCommit(Repository.HEAD_AREA, "head");
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                     break;
                 case "merge":
@@ -346,7 +399,12 @@ public class Main {
                         Commit otherCommit = Utils.readObject(branchFile, Commit.class);
                         Commit ancestor = Merge.findSplitAncestor(currentCommit, otherCommit);
                         Set<String> sameNameBlobName = Merge.findSameBlob(currentCommit, otherCommit);
-                        List<Blobs> mergeBlobList = Merge.sameBlobListTraversal(sameNameBlobName, ancestor, currentCommit, otherCommit);
+                        List<Blobs> mergeBlobList = null;
+                        try {
+                            mergeBlobList = Merge.sameBlobListTraversal(sameNameBlobName, ancestor, currentCommit, otherCommit);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                         String mergeMessage = "Merged " + otherCommit.getBranch() + " into " + currentCommit.getBranch() + ".";
 //                        Merged [given branch name] into [current branch name].
                         dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z", Locale.ENGLISH);
@@ -359,9 +417,17 @@ public class Main {
                         } catch (NoSuchAlgorithmException e) {
                             throw new RuntimeException(e);
                         }
-                        newCommit.writeCommit(Repository.COMMIT_AREA, newCommit.getCommitID()); // 将commit写入COMMIT_AREA
+                        try {
+                            newCommit.writeCommit(Repository.COMMIT_AREA, newCommit.getCommitID()); // 将commit写入COMMIT_AREA
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                         headCommit.delete();
-                        newCommit.writeCommit(Repository.HEAD_AREA, "head");// 头指针指向最新的commit
+                        try {
+                            newCommit.writeCommit(Repository.HEAD_AREA, "head");// 头指针指向最新的commit
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                         // 清空缓存区
                         Commit.clearStageArea(stageFileNames, Repository.STAGE_AREA);
                         Commit.clearStageArea(removeFileNames, Repository.REMOVAL_AREA);
