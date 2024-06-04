@@ -19,7 +19,7 @@ public class Main {
      * Usage: java gitlet.Main ARGS, where ARGS contains
      * <COMMAND> <OPERAND1> <OPERAND2> ...
      */
-    public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
+    public static void main(String[] args) throws IOException {
         File headCommit = new File(Repository.HEAD_AREA + "/head.bin");
         Commit currentCommit = null;
         List<String> stageFileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
@@ -44,7 +44,12 @@ public class Main {
                     dateFormat.setTimeZone(TimeZone.getTimeZone("CST"));
                     Date currentTime = new Date(0L);
                     String epochTime = dateFormat.format(currentTime);
-                    Commit firstCommit = new Commit(masterBranch, commitMessage, epochTime, null, null);
+                    Commit firstCommit = null;
+                    try {
+                        firstCommit = new Commit(masterBranch, commitMessage, epochTime, null, null);
+                    } catch (NoSuchAlgorithmException e) {
+                        throw new RuntimeException(e);
+                    }
                     firstCommit.writeCommit(Repository.HEAD_AREA, "head");
                     break;
                 case "add":
@@ -82,7 +87,12 @@ public class Main {
                         dateFormat.setTimeZone(TimeZone.getTimeZone("CST"));
                         currentTime = new Date();
                         String formatDate = dateFormat.format(currentTime);
-                        Commit newCommit = new Commit(currentBranch, secondArg, formatDate, currentCommitBlobArray, currentCommit);
+                        Commit newCommit = null;
+                        try {
+                            newCommit = new Commit(currentBranch, secondArg, formatDate, currentCommitBlobArray, currentCommit);
+                        } catch (NoSuchAlgorithmException e) {
+                            throw new RuntimeException(e);
+                        }
                         // TODO: 处理previousBlobArray的数据问题
                         boolean removalEqualWithCurrent = Commit.updateBlobArray(newCommit, previousBlobArray, removeFileNames, "REMOVAL_AREA");
                         boolean stageEqualWithCurrent = Commit.updateBlobArray(newCommit, newCommit.getBlobArray(), stageFileNames, "STAGE_AREA");
@@ -343,7 +353,12 @@ public class Main {
                         dateFormat.setTimeZone(TimeZone.getTimeZone("CST"));
                         currentTime = new Date();
                         String formatDate = dateFormat.format(currentTime);
-                        mergeCommit newCommit = new mergeCommit(currentCommit.getBranch(), mergeMessage, formatDate, mergeBlobList, currentCommit.getParent(), otherCommit.getParent());
+                        mergeCommit newCommit = null;
+                        try {
+                            newCommit = new mergeCommit(currentCommit.getBranch(), mergeMessage, formatDate, mergeBlobList, currentCommit.getParent(), otherCommit.getParent());
+                        } catch (NoSuchAlgorithmException e) {
+                            throw new RuntimeException(e);
+                        }
                         newCommit.writeCommit(Repository.COMMIT_AREA, newCommit.getCommitID()); // 将commit写入COMMIT_AREA
                         headCommit.delete();
                         newCommit.writeCommit(Repository.HEAD_AREA, "head");// 头指针指向最新的commit
