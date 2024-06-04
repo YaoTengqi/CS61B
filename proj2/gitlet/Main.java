@@ -226,7 +226,7 @@ public class Main {
                     System.out.println("=== Branches ===");
                     System.out.println("*" + currentCommit.getBranch());    //首先输出当前commit的名称，并带上*作为标识
                     for (String branchFileName : branchFileNames) {
-                        File stageFile = new File(Repository.HEAD_AREA + branchFileName);
+                        File stageFile = new File(String.valueOf(Utils.join(Repository.HEAD_AREA, branchFileName)));
                         Commit branchCommit = Utils.readObject(stageFile, Commit.class);
                         String branchName = branchCommit.getBranch(); // 获取真正的文件名
                         if (!branchName.equals(currentCommit.getBranch())) {
@@ -236,7 +236,7 @@ public class Main {
                     System.out.println();
                     System.out.println("=== Staged Files ===");
                     for (String stageFileName : stageFileNames) {
-                        File stageFile = new File(Repository.STAGE_AREA + stageFileName);
+                        File stageFile = new File(String.valueOf(Utils.join(Repository.STAGE_AREA, stageFileName)));
                         Blobs blob = Utils.readObject(stageFile, Blobs.class);
                         String[] parts = blob.getBlobName().split("/");
                         String realFileName = parts[parts.length - 1]; // 获取真正的文件名
@@ -245,7 +245,7 @@ public class Main {
                     System.out.println();
                     System.out.println("=== Removed Files ===");
                     for (String removeFileName : removeFileNames) {
-                        File removeFile = new File(Repository.REMOVAL_AREA + removeFileName);
+                        File removeFile = new File(String.valueOf(Utils.join(Repository.REMOVAL_AREA, removeFileName)));
                         Blobs blob = Utils.readObject(removeFile, Blobs.class);
                         String[] parts = blob.getBlobName().split("/");
                         String realFileName = parts[parts.length - 1]; // 获取真正的文件名
@@ -300,10 +300,10 @@ public class Main {
                                 for (String branchFileName : branchFileNames) {
                                     if (branchFileName.equals(secondArg + ".bin")) {
                                         branchExist = true;
-                                        File branchFile = new File(Repository.HEAD_AREA + branchFileName);
+                                        File branchFile = new File(String.valueOf(Utils.join(Repository.HEAD_AREA, branchFileName)));
                                         Commit branchCommit = Utils.readObject(branchFile, Commit.class);
                                         // 将当前branch写回HEAD_AREA中保留此branch
-                                        File currentBranchFile = new File(Repository.HEAD_AREA + currentCommit.getBranch() + ".bin");
+                                        File currentBranchFile = new File(String.valueOf(Utils.join(Repository.HEAD_AREA, currentCommit.getBranch(), ".bin")));
                                         if (currentBranchFile.exists()) {
                                             currentBranchFile.delete();
                                         }
