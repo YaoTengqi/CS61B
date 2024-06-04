@@ -120,7 +120,7 @@ Repository负责对文件夹进行操作
 | `addDifferentBlobs(List<Blobs> mergeBlobList, List<Blobs> currentAddBlobList, List<Blobs> otherAddBlobList)` |              /              |    对两个branch中不同的addBlob直接添加到`mergeBlobList`中    |
 | `removeDifferentBlobs(List<Blobs> mergeBlobList, List<Blobs> currentRemoveBlobList, List<Blobs> otherRemoveBlobList)` |              /              |  对两个branch中不同的removeBlob直接从`mergeBlobList`中移除   |
 |                    `findSameNameInOther`                     |           `Blobs`           | 通过文件名找到other branch中相同文件名的blob，为了与ancestor以及master中的内容进行比较 |
-|                      `resolveConflict`                       |                             | 解决文件冲突的问题，即将当前branch的内容写在前面，而把另一branch的内容写在后面 |
+|                      `resolveConflict`                       |           `Blobs`           | 解决文件冲突的问题，即将当前branch的内容写在前面，而把另一branch的内容写在后面 |
 |                                                              |                             |                                                              |
 
 

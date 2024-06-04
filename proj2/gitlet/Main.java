@@ -4,10 +4,8 @@ import jdk.jshell.execution.Util;
 
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 
 /**
@@ -41,8 +39,12 @@ public class Main {
                     Repository.makeHeadArea();
                     Repository.makeRemovalArea();
                     String masterBranch = "master";
-                    String commitMessage = "This is the first commit!";
-                    Commit firstCommit = new Commit(masterBranch, commitMessage, null, null);
+                    String commitMessage = "initial commit";
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z", Locale.ENGLISH);
+                    dateFormat.setTimeZone(TimeZone.getTimeZone("CST"));
+                    Date currentTime = new Date(0L);
+                    String epochTime = dateFormat.format(currentTime);
+                    Commit firstCommit = new Commit(masterBranch, commitMessage, epochTime, null, null);
                     firstCommit.writeCommit(Repository.HEAD_AREA, "head");
                     break;
                 case "add":
@@ -53,7 +55,7 @@ public class Main {
                     if (secondArg == null) {
                         throw new GitletException("Please enter filename.");
                     } else {
-                        String addFileName = Repository.WORK_STAGE + "/" + secondArg;
+                        String addFileName = String.valueOf(Utils.join(Repository.WORK_STAGE, secondArg));
                         File addFile = new File(addFileName);
                         if (!addFile.exists()) {
                             throw new GitletException(addFile + " does not exist.");
@@ -76,7 +78,11 @@ public class Main {
                         List<Blobs> previousBlobArray = currentCommit.getBlobArray();
                         List<Blobs> currentCommitBlobArray = new ArrayList<>();
                         String currentBranch = currentCommit.getBranch();
-                        Commit newCommit = new Commit(currentBranch, secondArg, currentCommitBlobArray, currentCommit);
+                        dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z", Locale.ENGLISH);
+                        dateFormat.setTimeZone(TimeZone.getTimeZone("CST"));
+                        currentTime = new Date();
+                        String formatDate = dateFormat.format(currentTime);
+                        Commit newCommit = new Commit(currentBranch, secondArg, formatDate, currentCommitBlobArray, currentCommit);
                         // TODO: 处理previousBlobArray的数据问题
                         boolean removalEqualWithCurrent = Commit.updateBlobArray(newCommit, previousBlobArray, removeFileNames, "REMOVAL_AREA");
                         boolean stageEqualWithCurrent = Commit.updateBlobArray(newCommit, newCommit.getBlobArray(), stageFileNames, "STAGE_AREA");
@@ -113,13 +119,13 @@ public class Main {
                         int rmFlag = -1;
                         for (int i = 0; i < stageBlobsList.size(); i++) {
                             Blobs blob = stageBlobsList.get(i);
-                            if (blob.getBlobName().equals(Repository.WORK_STAGE + secondArg)) {
+                            if (blob.getBlobName().equals(String.valueOf(Utils.join(Repository.WORK_STAGE, secondArg)))) {
                                 // 该文件被commit过，标记为删除，在下一次commit时删除
                                 stageRemoveFile.delete();
                             }
                         }
                         // 如果currentCommit中有对应的文件则将其放入REMOVE_AREA中下一次删去
-                        Blobs removeBlob = new Blobs(Repository.WORK_STAGE + secondArg);
+                        Blobs removeBlob = new Blobs(String.valueOf(Utils.join(Repository.WORK_STAGE, secondArg)));
                         rmFlag = Blobs.trackFiles(currentCommit.getBlobArray(), removeBlob);
                         if (rmFlag == 1) {
                             Utils.writeObject(removeFile, removeBlob);
@@ -182,13 +188,12 @@ public class Main {
                     }
                     break;
                 case "status":
-
                     List<String> branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
                     List<String> untrackedFileNames = new ArrayList<>();
                     System.out.println("=== Branches ===");
                     System.out.println("*" + currentCommit.getBranch());    //首先输出当前commit的名称，并带上*作为标识
                     for (String branchFileName : branchFileNames) {
-                        File stageFile = new File(Repository.HEAD_AREA + "/" + branchFileName);
+                        File stageFile = new File(Repository.HEAD_AREA + branchFileName);
                         Commit branchCommit = Utils.readObject(stageFile, Commit.class);
                         String branchName = branchCommit.getBranch(); // 获取真正的文件名
                         if (!branchName.equals(currentCommit.getBranch())) {
@@ -198,7 +203,7 @@ public class Main {
                     System.out.println();
                     System.out.println("=== Staged Files ===");
                     for (String stageFileName : stageFileNames) {
-                        File stageFile = new File(Repository.STAGE_AREA + "/" + stageFileName);
+                        File stageFile = new File(Repository.STAGE_AREA + stageFileName);
                         Blobs blob = Utils.readObject(stageFile, Blobs.class);
                         String[] parts = blob.getBlobName().split("/");
                         String realFileName = parts[parts.length - 1]; // 获取真正的文件名
@@ -207,7 +212,7 @@ public class Main {
                     System.out.println();
                     System.out.println("=== Removed Files ===");
                     for (String removeFileName : removeFileNames) {
-                        File removeFile = new File(Repository.REMOVAL_AREA + "/" + removeFileName);
+                        File removeFile = new File(Repository.REMOVAL_AREA + removeFileName);
                         Blobs blob = Utils.readObject(removeFile, Blobs.class);
                         String[] parts = blob.getBlobName().split("/");
                         String realFileName = parts[parts.length - 1]; // 获取真正的文件名
@@ -217,7 +222,7 @@ public class Main {
                     System.out.println("=== Modifications Not Staged For Commit ===");
                     List<String> workStageFileNames = Utils.plainFilenamesIn(Repository.WORK_STAGE);
                     for (String workStageFile : workStageFileNames) {
-                        Blobs blob = new Blobs(Repository.WORK_STAGE + "/" + workStageFile);
+                        Blobs blob = new Blobs(Repository.WORK_STAGE + workStageFile);
                         int modifyFlag = Blobs.trackFiles(currentCommit.getBlobArray(), blob);
                         if (modifyFlag == 2 || modifyFlag == 0) {
                             int lastIndex = workStageFile.lastIndexOf('.');
@@ -257,10 +262,10 @@ public class Main {
                                 for (String branchFileName : branchFileNames) {
                                     if (branchFileName.equals(secondArg + ".bin")) {
                                         branchExist = true;
-                                        File branchFile = new File(Repository.HEAD_AREA + "/" + branchFileName);
+                                        File branchFile = new File(Repository.HEAD_AREA + branchFileName);
                                         Commit branchCommit = Utils.readObject(branchFile, Commit.class);
                                         // 将当前branch写回HEAD_AREA中保留此branch
-                                        File currentBranchFile = new File(Repository.HEAD_AREA + "/" + currentCommit.getBranch() + ".bin");
+                                        File currentBranchFile = new File(Repository.HEAD_AREA + currentCommit.getBranch() + ".bin");
                                         if (currentBranchFile.exists()) {
                                             currentBranchFile.delete();
                                         }
@@ -272,15 +277,17 @@ public class Main {
                                     }
                                 }
                                 if (!branchExist) {
-                                    // 1. java gitlet.Main checkout -- [file name]
-                                    Checkout.checkoutFile(currentCommit, secondArg);
                                     throw new GitletException("No such branch exists.");
                                 }
                             }
                         } else if (args.length == 3) {
+                            // 1. java gitlet.Main checkout -- [file name]
+                            String fileName = args[2];
+                            Checkout.checkoutFile(currentCommit, fileName);
+                        } else if (args.length == 4) {
                             // 2. java gitlet.Main checkout [commit id] -- [file name]
                             String commitID = args[1];
-                            String fileName = args[2];
+                            String fileName = args[3];
                             boolean resetFlag = false;
                             Checkout.checkoutCommitFile(currentCommit, fileName, commitID, resetFlag);
                         }
@@ -332,7 +339,11 @@ public class Main {
                         List<Blobs> mergeBlobList = Merge.sameBlobListTraversal(sameNameBlobName, ancestor, currentCommit, otherCommit);
                         String mergeMessage = "Merged " + otherCommit.getBranch() + " into " + currentCommit.getBranch() + ".";
 //                        Merged [given branch name] into [current branch name].
-                        mergeCommit newCommit = new mergeCommit(currentCommit.getBranch(), mergeMessage, mergeBlobList, currentCommit.getParent(), otherCommit.getParent());
+                        dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z", Locale.ENGLISH);
+                        dateFormat.setTimeZone(TimeZone.getTimeZone("CST"));
+                        currentTime = new Date();
+                        String formatDate = dateFormat.format(currentTime);
+                        mergeCommit newCommit = new mergeCommit(currentCommit.getBranch(), mergeMessage, formatDate, mergeBlobList, currentCommit.getParent(), otherCommit.getParent());
                         newCommit.writeCommit(Repository.COMMIT_AREA, newCommit.getCommitID()); // 将commit写入COMMIT_AREA
                         headCommit.delete();
                         newCommit.writeCommit(Repository.HEAD_AREA, "head");// 头指针指向最新的commit
