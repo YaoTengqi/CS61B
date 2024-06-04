@@ -30,49 +30,59 @@ public class Repository {
      */
 //    public static final File WORK_STAGE = new File(CWD + "/myTest"); //专门用于测试的文件夹
     public static final File WORK_STAGE = join(CWD, "/"); //专门用于测试的文件夹
-    public static final File GITLET_DIR = join(WORK_STAGE, ".gitlet", "/");
+    public static final File GITLET_DIR = join(WORK_STAGE, ".gitlet");
     public static final File STAGE_AREA = join(GITLET_DIR, "stage_area", "/");
     public static final File COMMIT_AREA = join(GITLET_DIR, "commit_area", "/");
     public static final File HEAD_AREA = join(GITLET_DIR, "head_area", "/");
     public static final File REMOVAL_AREA = join(GITLET_DIR, "removal_area", "/");
 
-    public static void makeSetup() {
+    public static boolean makeSetup() {
         if (!GITLET_DIR.exists()) {
             GITLET_DIR.mkdir();
+            return true;
         } else {
-            throw new GitletException("A Gitlet version-control system already exists in the current directory.");
+            System.out.println("A Gitlet version-control system already exists in the current directory.");
+            return false;
         }
     }
 
-    public static void makeStageArea() {
+    public static boolean makeStageArea() {
         if (!STAGE_AREA.exists()) {
             STAGE_AREA.mkdir();
+            return true;
         } else {
-            throw new GitletException("A STAGE_AREA already exists in the current directory.");
+            System.out.println("A STAGE_AREA already exists in the current directory.");
+            return false;
         }
     }
 
-    public static void makeCommitArea() {
+    public static boolean makeCommitArea() {
         if (!COMMIT_AREA.exists()) {
             COMMIT_AREA.mkdir();
+            return true;
         } else {
-            throw new GitletException("A COMMIT_AREA already exists in the current directory.");
+            System.out.println("A COMMIT_AREA already exists in the current directory.");
+            return false;
         }
     }
 
-    public static void makeHeadArea() {
+    public static boolean makeHeadArea() {
         if (!HEAD_AREA.exists()) {
             HEAD_AREA.mkdir();
+            return true;
         } else {
-            throw new GitletException("A HEAD_AREA already exists in the current directory.");
+            System.out.println("A HEAD_AREA already exists in the current directory.");
+            return false;
         }
     }
 
-    public static void makeRemovalArea() {
+    public static boolean makeRemovalArea() {
         if (!REMOVAL_AREA.exists()) {
             REMOVAL_AREA.mkdir();
+            return true;
         } else {
-            throw new GitletException("A REMOVAL_AREA already exists in the current directory.");
+            System.out.println("A REMOVAL_AREA already exists in the current directory.");
+            return false;
         }
     }
 }

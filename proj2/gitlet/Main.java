@@ -32,27 +32,30 @@ public class Main {
             String firstArg = args[0];
             switch (firstArg) {
                 case "init":
-                    Repository.makeSetup();
-                    Repository.makeStageArea();
-                    Repository.makeCommitArea();
-                    Repository.makeHeadArea();
-                    Repository.makeRemovalArea();
-                    String masterBranch = "master";
-                    String commitMessage = "initial commit";
+                    boolean init_flag = true;
+                    init_flag = Repository.makeSetup();
                     SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z", Locale.ENGLISH);
                     dateFormat.setTimeZone(TimeZone.getTimeZone("CST"));
                     Date currentTime = new Date(0L);
                     String epochTime = dateFormat.format(currentTime);
-                    Commit firstCommit = null;
-                    try {
-                        firstCommit = new Commit(masterBranch, commitMessage, epochTime, null, null);
-                    } catch (NoSuchAlgorithmException e) {
-                        throw new RuntimeException(e);
-                    }
-                    try {
-                        firstCommit.writeCommit(Repository.HEAD_AREA, "head");
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
+                    if (init_flag) {
+                        Repository.makeStageArea();
+                        Repository.makeCommitArea();
+                        Repository.makeHeadArea();
+                        Repository.makeRemovalArea();
+                        String masterBranch = "master";
+                        String commitMessage = "initial commit";
+                        Commit firstCommit = null;
+                        try {
+                            firstCommit = new Commit(masterBranch, commitMessage, epochTime, null, null);
+                        } catch (NoSuchAlgorithmException e) {
+                            throw new RuntimeException(e);
+                        }
+                        try {
+                            firstCommit.writeCommit(Repository.HEAD_AREA, "head");
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                     break;
                 case "add":
