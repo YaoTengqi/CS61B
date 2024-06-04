@@ -195,4 +195,4 @@ Repository负责对文件夹进行操作
 
 1. `public static boolean updateBlobArray(Commit updateCommit, List<Blobs> previousBlobArray, List<String> fileNames, String command)`函数中，需要一个tempBlobArray来操作存储变化的新BlobArray，因为直接令tempBlobArray = previousBlobArray的话他们俩指向的是同一块地址，操作tempBlobArray时previousBlobArray指向的内容也变换导致所有commit的BlobArray也随之变换出现问题。
 2. 用shortID查询commitID完成相应的`java gitlet.Main checkout [commit id] -- [file name]`功能会影响速度，Git的解决办法是把Blobs们依据**哈希值**的前两位建立文件夹进行存储，查找时只需算出哈希值就可以快速查找(O(1))。
-
+3. **2024.6.4**测试很重要，用写好的测试脚本来测试效率较高且方便，是一劳永逸的方法，无需再手动测试，因此学会如何写测试脚本十分重要，与写开发文档的思想是一样的，都是为了更规范与方便高效。
