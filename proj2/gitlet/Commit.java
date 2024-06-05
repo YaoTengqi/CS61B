@@ -1,13 +1,10 @@
 package gitlet;
 
-// TODO: any imports you need here
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Date; // TODO: You'll likely use this in this class
 import java.util.List;
 
 /**
@@ -19,7 +16,6 @@ import java.util.List;
  */
 public class Commit implements Serializable {
     /**
-     * TODO: add instance variables here.
      *
      * List all instance variables of the Commit class here with a useful
      * comment above them describing what that variable represents and how that

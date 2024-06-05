@@ -89,7 +89,7 @@ public class Checkout {
             String shortCheckoutID = commitID.substring(0, 6);
             if (shortCommitID.equals(shortCheckoutID)) {
                 commitExists = true;
-                //TODO:检查是否为UntrackedFile
+                //检查是否为UntrackedFile
                 boolean isUntracked = checkUntracked(currentCommit, fileName);
                 if (isUntracked) {
                     throw new GitletException("There is an untracked file in the way; delete it, or add and commit it first.");

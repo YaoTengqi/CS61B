@@ -12,7 +12,7 @@ import java.util.*;
 /**
  * Driver class for Gitlet, a subset of the Git version-control system.
  *
- * @author TODO
+ * @author YaoTengqi
  */
 public class Main {
 

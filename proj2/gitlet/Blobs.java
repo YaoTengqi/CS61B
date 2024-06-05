@@ -111,16 +111,21 @@ public class Blobs implements Serializable {
                     File removeRealFile = new File(String.valueOf(Utils.join(Repository.REMOVAL_AREA, binFileName)));
                     //从REMOVAL_AREA中删除
                     removeRealFile.delete();
-//                    List<Blobs> removeBlobs = Blobs.returnBlobsList(removeFile, Repository.REMOVAL_AREA);
-//                    Blobs removeBlob = removeBlobs.get(0);//一共只有一个Blob
-                    //添加到STAGE_AREA中
-//                    File stageRealFile = new File(String.valueOf(Utils.join(Repository.STAGE_AREA, binFileName)));
-//                    Utils.writeObject(stageRealFile, removeBlob);
+                    /**     添加到STAGE_AREA
+                     List<Blobs> removeBlobs = Blobs.returnBlobsList(removeFile, Repository.REMOVAL_AREA);
+                     Blobs removeBlob = removeBlobs.get(0);//一共只有一个Blob
+                     //                    添加到STAGE_AREA中
+                     File stageRealFile = new File(String.valueOf(Utils.join(Repository.STAGE_AREA, binFileName)));
+                     Utils.writeObject(stageRealFile, removeBlob);
+                     */
                 }
             }
-            if (!removeFlag) {
-                throw new GitletException("This file is tracked and not changed.");
-            }
+
+            /**     若果与上一个commit中的文件相比并未发生改变则输出提示信息
+             if (!removeFlag) {
+             System.out.println("This file is tracked and not changed.");
+             }
+             */
         }
     }
 
