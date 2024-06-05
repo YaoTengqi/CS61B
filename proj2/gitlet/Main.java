@@ -1,6 +1,8 @@
 package gitlet;
 
 
+import jdk.jshell.execution.Util;
+
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
@@ -66,15 +68,41 @@ public class Main {
                     if (secondArg == null) {
                         throw new GitletException("Please enter filename.");
                     } else {
-                        String addFileName = String.valueOf(Utils.join(Repository.WORK_STAGE, secondArg));
-                        File addFile = new File(addFileName);
-                        if (!addFile.exists()) {
-                            throw new GitletException(addFile + " does not exist.");
-                        } else {
-                            try {
-                                Blobs.addBlobs(currentCommit, addFileName);
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
+                        boolean removeFlag = false;
+                        String[] parts = secondArg.split("/");
+                        String realFileName = parts[parts.length - 1]; // 获取真正的文件名
+                        int lastIndex = realFileName.lastIndexOf('.');
+                        String fileNameWithoutExtension = realFileName.substring(0, lastIndex);
+                        String binFileName = fileNameWithoutExtension + ".bin";
+                        //如果在REMOVAL_STAGE中出现同名文件，则将其从REMOVAL_AREA中删除并添加到STAGE_AREA中
+                        for (String removeFileName : removeFileNames) {
+                            if (binFileName.equals(removeFileName)) {
+                                removeFlag = true;
+                                List<String> removeFile = new ArrayList<>();
+                                removeFile.add(removeFileName);
+                                List<Blobs> removeBlobs = Blobs.returnBlobsList(removeFile, Repository.REMOVAL_AREA);
+                                Blobs removeBlob = removeBlobs.get(0);//一共只有一个Blob
+
+
+                                File removeRealFile = new File(String.valueOf(Utils.join(Repository.REMOVAL_AREA, binFileName)));
+                                //从REMOVAL_AREA中
+                                removeRealFile.delete();
+                                //添加到STAGE_AREA中
+                                File stageRealFile = new File(String.valueOf(Utils.join(Repository.STAGE_AREA, binFileName)));
+                                Utils.writeObject(stageRealFile, removeBlob);
+                            }
+                        }
+                        if (!removeFlag) {  //当不存在于REMOVAL_AREA时，对其进行正常的add
+                            String addFileName = String.valueOf(Utils.join(Repository.WORK_STAGE, secondArg));
+                            File addFile = new File(addFileName);
+                            if (!addFile.exists()) {
+                                throw new GitletException(addFile + " does not exist.");
+                            } else {
+                                try {
+                                    Blobs.addBlobs(currentCommit, addFileName);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
                             }
                         }
                     }
@@ -103,7 +131,6 @@ public class Main {
                         } catch (NoSuchAlgorithmException e) {
                             throw new RuntimeException(e);
                         }
-                        // TODO: 处理previousBlobArray的数据问题
                         boolean removalEqualWithCurrent = Commit.updateBlobArray(newCommit, previousBlobArray, removeFileNames, "REMOVAL_AREA");
                         boolean stageEqualWithCurrent = Commit.updateBlobArray(newCommit, newCommit.getBlobArray(), stageFileNames, "STAGE_AREA");
                         if (!(stageEqualWithCurrent && removalEqualWithCurrent)) {
