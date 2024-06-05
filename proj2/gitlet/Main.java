@@ -71,7 +71,8 @@ public class Main {
                         String addFileName = String.valueOf(Utils.join(Repository.WORK_STAGE, secondArg));
                         File addFile = new File(addFileName);
                         if (!addFile.exists()) {
-                            throw new GitletException(addFile + " does not exist.");
+//                            throw new GitletException(addFile + " does not exist.");
+                            System.out.println("File does not exist.");
                         } else {
                             try {
                                 Blobs.addBlobs(currentCommit, addFileName);
