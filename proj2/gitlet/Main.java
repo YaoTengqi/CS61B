@@ -177,12 +177,12 @@ public class Main {
                             File thisFile = Utils.join(Repository.WORK_STAGE, secondArg);
                             if (thisFile.exists()) {  // 在工作目录下删除文件
                                 thisFile.delete();
-                            } else {
-                                // rm fileName 的 file 即不在STAGE_AREA也不在headCommit中，将报错
-                                System.out.println("No reason to remove the file.");
                             }
                         } else if (rmFlag == 3) {
                             Utils.writeObject(removeFile, removeBlob);  //添加到REMOVAL_AREA中
+                        } else {
+                            // rm fileName 的 file 即不在STAGE_AREA也不在headCommit中，将报错
+                            System.out.println("No reason to remove the file.");
                         }
                     }
                     break;
