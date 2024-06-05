@@ -90,6 +90,8 @@ public class Main {
                     }
                     if (args.length < 2 || args[1].equals("")) {
                         System.out.println("Please enter a commit message.");
+                    } else if (stageFileNames.size() == 0) {
+                        System.out.println("No changes added to the commit.");
                     } else {
                         secondArg = args[1];
                         List<Blobs> previousBlobArray = currentCommit.getBlobArray();
