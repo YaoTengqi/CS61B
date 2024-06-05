@@ -91,7 +91,7 @@ public class Main {
                     }
                     if (args.length < 2 || args[1].equals("")) {
                         System.out.println("Please enter a commit message.");
-                    } else if (stageFileNames.size() == 0) {
+                    } else if (stageFileNames.size() == 0 && removeFileNames.size() == 0) {
                         System.out.println("No changes added to the commit.");
                     } else {
                         secondArg = args[1];
@@ -157,13 +157,21 @@ public class Main {
                             }
                         }
                         // 如果currentCommit中有对应的文件则将其放入REMOVE_AREA中下一次删去
-                        Blobs removeBlob = null;
-                        try {
-                            removeBlob = new Blobs(String.valueOf(Utils.join(Repository.WORK_STAGE, secondArg)));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
+                        Blobs removeBlob = new Blobs(String.valueOf(Utils.join(Repository.WORK_STAGE, secondArg)));
+                        if (removeBlob.getBlobID() == null) {
+                            //文件不存在于WORK_STAGE，因此要在上一次commit中进行查找
+                            List<Blobs> currentBlobs = currentCommit.getBlobArray();
+                            for (Blobs blob : currentBlobs) {
+                                String blobName = blob.getBlobName();
+                                String removePath = String.valueOf(Utils.join(Repository.WORK_STAGE, secondArg));
+                                if (blobName.equals(removePath)) {
+                                    removeBlob = blob;
+                                    rmFlag = 3; // 存在于上一次commit但不存在于当前WORK_STAGE
+                                }
+                            }
+                        } else {
+                            rmFlag = Blobs.trackFiles(currentCommit.getBlobArray(), removeBlob);
                         }
-                        rmFlag = Blobs.trackFiles(currentCommit.getBlobArray(), removeBlob);
                         if (rmFlag == 1 || rmFlag == 2) {
                             Utils.writeObject(removeFile, removeBlob);
                             File thisFile = Utils.join(Repository.WORK_STAGE, secondArg);
@@ -171,8 +179,10 @@ public class Main {
                                 thisFile.delete();
                             } else {
                                 // rm fileName 的 file 即不在STAGE_AREA也不在headCommit中，将报错
-                                throw new GitletException("No reason to remove the file.");
+                                System.out.println("No reason to remove the file.");
                             }
+                        } else if (rmFlag == 3) {
+                            Utils.writeObject(removeFile, removeBlob);  //添加到REMOVAL_AREA中
                         }
                     }
                     break;
@@ -259,13 +269,8 @@ public class Main {
                     System.out.println("=== Modifications Not Staged For Commit ===");
                     List<String> workStageFileNames = Utils.plainFilenamesIn(Repository.WORK_STAGE);
                     for (String workStageFile : workStageFileNames) {
-                        Blobs blob = null;
-                        try {
-                            String fileName = String.valueOf(Utils.join(Repository.WORK_STAGE, workStageFile));
-                            blob = new Blobs(fileName);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
+                        String fileName = String.valueOf(Utils.join(Repository.WORK_STAGE, workStageFile));
+                        Blobs blob = new Blobs(fileName);
                         int modifyFlag = Blobs.trackFiles(currentCommit.getBlobArray(), blob);
                         if (modifyFlag == 2 || modifyFlag == 0) {
                             int lastIndex = workStageFile.lastIndexOf('.');

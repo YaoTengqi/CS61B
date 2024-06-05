@@ -34,15 +34,14 @@ public class Blobs implements Serializable {
      * @param fileName
      * @throws IOException
      */
-    public Blobs(String fileName) throws IOException {
+    public Blobs(String fileName) {
         File blob_file = new File(fileName);
-        if (!blob_file.exists()) {    // 不存在时提示
-            System.out.println(fileName + " doesn't exist, please check the file!");
-            throw new FileNotFoundException();
-        } else { // 存在时获取文件内容
+        if (blob_file.exists()) {   // 存在时获取文件内容
             this.content = Utils.readContents(blob_file);
             this.blobName = fileName;
             this.blobID = Utils.sha1(this.blobName, this.content);
+        } else { // 不存在时提示
+//            System.out.println(fileName + " doesn't exist, please check the file!");
         }
     }
 
