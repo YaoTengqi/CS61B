@@ -48,6 +48,7 @@ public class Blobs implements Serializable {
 
     /**
      * 创建一个新的Blobs，用于对原blob进行修改等操作
+     *
      * @param fileName
      * @param content
      * @throws IOException
@@ -93,7 +94,33 @@ public class Blobs implements Serializable {
         if (blobChangeFlag != 2) {
             deleteStageFile(currentBlob.getBlobName(), "add", currentBlob);
         } else {
-            throw new GitletException("This file is tracked and not changed.");
+            //当文件并未与上一个commit有区别时，判断该文件是否存在于REMOVAL_STAGE中
+            boolean removeFlag = false;
+            List<String> removeFileNames = Utils.plainFilenamesIn(Repository.REMOVAL_AREA);
+            String[] parts = blobFileName.split("/");
+            String realFileName = parts[parts.length - 1]; // 获取真正的文件名
+            int lastIndex = realFileName.lastIndexOf('.');
+            String fileNameWithoutExtension = realFileName.substring(0, lastIndex);
+            String binFileName = fileNameWithoutExtension + ".bin";
+            //如果在REMOVAL_STAGE中出现同名文件，则将其从REMOVAL_AREA中删除并添加到STAGE_AREA中
+            for (String removeFileName : removeFileNames) {
+                if (binFileName.equals(removeFileName)) {
+                    removeFlag = true;
+                    List<String> removeFile = new ArrayList<>();
+                    removeFile.add(removeFileName);
+                    File removeRealFile = new File(String.valueOf(Utils.join(Repository.REMOVAL_AREA, binFileName)));
+                    //从REMOVAL_AREA中删除
+                    removeRealFile.delete();
+//                    List<Blobs> removeBlobs = Blobs.returnBlobsList(removeFile, Repository.REMOVAL_AREA);
+//                    Blobs removeBlob = removeBlobs.get(0);//一共只有一个Blob
+                    //添加到STAGE_AREA中
+//                    File stageRealFile = new File(String.valueOf(Utils.join(Repository.STAGE_AREA, binFileName)));
+//                    Utils.writeObject(stageRealFile, removeBlob);
+                }
+            }
+            if (!removeFlag) {
+                throw new GitletException("This file is tracked and not changed.");
+            }
         }
     }
 
