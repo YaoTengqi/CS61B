@@ -160,7 +160,7 @@ public class Main {
                             throw new RuntimeException(e);
                         }
                         rmFlag = Blobs.trackFiles(currentCommit.getBlobArray(), removeBlob);
-                        if (rmFlag == 1) {
+                        if (rmFlag == 1 || rmFlag == 2) {
                             Utils.writeObject(removeFile, removeBlob);
                             File thisFile = Utils.join(Repository.WORK_STAGE, secondArg);
                             if (thisFile.exists()) {  // 在工作目录下删除文件
@@ -257,7 +257,8 @@ public class Main {
                     for (String workStageFile : workStageFileNames) {
                         Blobs blob = null;
                         try {
-                            blob = new Blobs(Repository.WORK_STAGE + workStageFile);
+                            String fileName = String.valueOf(Utils.join(Repository.WORK_STAGE, workStageFile));
+                            blob = new Blobs(fileName);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
