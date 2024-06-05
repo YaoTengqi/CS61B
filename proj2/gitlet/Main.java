@@ -88,8 +88,8 @@ public class Main {
                     if (!Repository.COMMIT_AREA.exists()) {
                         throw new GitletException("COMMIT_AREA doesn't exists, please execute 'git init' first.");
                     }
-                    if (args.length < 2) {
-                        throw new GitletException("Please enter message.");
+                    if (args.length < 2 || args[1].equals("")) {
+                        System.out.println("Please enter a commit message.");
                     } else {
                         secondArg = args[1];
                         List<Blobs> previousBlobArray = currentCommit.getBlobArray();
