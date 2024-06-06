@@ -206,7 +206,7 @@ public class Main {
                     for (String globalFileName : globalLogFiles) {
                         File commitFile = new File(String.valueOf(Utils.join(Repository.COMMIT_AREA, globalFileName)));
                         Commit globalLogCommit = Utils.readObject(commitFile, Commit.class);
-//                        System.out.println("===");
+                        System.out.println("===");
                         System.out.println("commit " + globalLogCommit.getCommitID());
                         System.out.println("Date: " + globalLogCommit.getTime());
                         System.out.println(globalLogCommit.getMessage());
