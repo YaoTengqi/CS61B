@@ -340,7 +340,8 @@ public class Main {
                             // 1. java gitlet.Main checkout -- [file name]
                             String fileName = args[2];
                             try {
-                                Checkout.checkoutFile(currentCommit, fileName);
+                                boolean checkFlag = false;
+                                Checkout.checkoutFile(currentCommit, fileName, checkFlag);
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }

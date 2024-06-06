@@ -42,13 +42,13 @@ public class Checkout {
      * @return
      * @throws IOException
      */
-    public static boolean checkoutFile(Commit currentCommit, String fileName) throws IOException {
+    public static boolean checkoutFile(Commit currentCommit, String fileName, boolean resetFlag) throws IOException {
         // 1. java gitlet.Main checkout -- [file name]
         List<Blobs> previousBlobArray = currentCommit.getBlobArray();
         String checkoutFileName = String.valueOf(Utils.join(Repository.WORK_STAGE, fileName));
         boolean fileExists = false;
-        if (previousBlobArray == null) {
-            throw new GitletException("File does not exist in that commit.");
+        if (previousBlobArray == null && !resetFlag) {
+            System.out.println("File does not exist in that commit.");
         } else {
             for (Blobs blob : previousBlobArray) {
                 if (checkoutFileName.equals(blob.getBlobName())) {
@@ -63,7 +63,7 @@ public class Checkout {
                     fos.write(blob.getContent());
                 }
             }
-            if (!fileExists) { //文件不存在
+            if (!fileExists && !resetFlag) { //文件不存在
                 System.out.println("File does not exist in that commit.");
             }
         }
@@ -91,10 +91,10 @@ public class Checkout {
                 commitExists = true;
                 //检查是否为UntrackedFile
                 boolean isUntracked = checkUntracked(currentCommit, fileName);
-                if (isUntracked) {
-                    throw new GitletException("There is an untracked file in the way; delete it, or add and commit it first.");
+                if (isUntracked && !resetFlag) {
+                    System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
                 }
-                fileExists = checkoutFile(commit, fileName);
+                fileExists = checkoutFile(commit, fileName, resetFlag);
                 if (resetFlag) {
                     currentCommit = commit; //如果为reset指令则切换头指针
                 }
