@@ -67,7 +67,7 @@ public class Blobs implements Serializable {
      * @return
      */
     public static int trackFiles(List<Blobs> previousBlobList, Blobs currentBlob) {
-        int returnFlag = -1;    // 上次commit不为空且blobs不存在于上次commit
+        int returnFlag = 0;    // 上次commit不为空且blobs不存在于上次commit
         if (previousBlobList == null) {
             return 0;   // 上次commit为空
         }

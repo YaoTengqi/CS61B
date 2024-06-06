@@ -149,12 +149,14 @@ public class Main {
                         File removeFile = Utils.join(Repository.REMOVAL_AREA, fileNameWithoutExtension + ".bin");
                         // 如果STAGE_AREA中有对应的文件则将其删去
                         int rmFlag = -1;
+                        boolean existInStage = false;
                         for (int i = 0; i < stageBlobsList.size(); i++) {
                             Blobs blob = stageBlobsList.get(i);
                             if (blob.getBlobName().equals(String.valueOf(Utils.join(Repository.WORK_STAGE, secondArg)))) {
                                 // 该文件被commit过，标记为删除，在下一次commit时删除
                                 stageRemoveFile.delete();
                             }
+                            existInStage = true;
                         }
                         // 如果currentCommit中有对应的文件则将其放入REMOVE_AREA中下一次删去
                         Blobs removeBlob = new Blobs(String.valueOf(Utils.join(Repository.WORK_STAGE, secondArg)));
@@ -173,12 +175,12 @@ public class Main {
                         } else {
                             rmFlag = Blobs.trackFiles(currentCommit.getBlobArray(), removeBlob);
                         }
-                        if (rmFlag == -1) {
+                        if (rmFlag == 0) {
                             // 不存在于上一次commit不存在于当前WORK_STAGE
-                            System.out.println("No reason to remove the file.");
-                        } else if (rmFlag == 0) {
+                            if (!existInStage) {
+                                System.out.println("No reason to remove the file.");
+                            }
                             // 不存在于上一次commit不存在于当前STAGE_STAGE
-//                            stageRemoveFile.delete();
                         } else if (rmFlag == 1 || rmFlag == 2) {
                             Utils.writeObject(removeFile, removeBlob);
                             File thisFile = Utils.join(Repository.WORK_STAGE, secondArg);
