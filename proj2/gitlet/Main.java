@@ -173,14 +173,14 @@ public class Main {
                         } else {
                             rmFlag = Blobs.trackFiles(currentCommit.getBlobArray(), removeBlob);
                         }
-                        if (rmFlag == 1 || rmFlag == 2) {
+                        if (rmFlag == 0) {
+                            // rm fileName 的 file 即不在STAGE_AREA也不在headCommit中，将报错
+                            System.out.println("No reason to remove the file.");
+                        } else if (rmFlag == 1 || rmFlag == 2) {
                             Utils.writeObject(removeFile, removeBlob);
                             File thisFile = Utils.join(Repository.WORK_STAGE, secondArg);
                             if (thisFile.exists()) {  // 在工作目录下删除文件
                                 thisFile.delete();
-                            } else {
-                                // rm fileName 的 file 即不在STAGE_AREA也不在headCommit中，将报错
-                                System.out.println("No reason to remove the file.");
                             }
                         } else if (rmFlag == 3) {
                             Utils.writeObject(removeFile, removeBlob);  //添加到REMOVAL_AREA中
@@ -202,7 +202,7 @@ public class Main {
                     List<Commit> globalLogCommitList = Commit.returnCommitList(currentCommit);
                     for (int i = 0; i < globalLogCommitList.size(); i++) {
                         Commit globalLogCommit = globalLogCommitList.get(i);
-                        System.out.println("===");
+//                        System.out.println("===");
                         System.out.println("commit " + globalLogCommit.getCommitID());
                         System.out.println("Date: " + globalLogCommit.getTime());
                         System.out.println(globalLogCommit.getMessage());
