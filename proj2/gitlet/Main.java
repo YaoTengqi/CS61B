@@ -158,7 +158,8 @@ public class Main {
                         }
                         // 如果currentCommit中有对应的文件则将其放入REMOVE_AREA中下一次删去
                         Blobs removeBlob = new Blobs(String.valueOf(Utils.join(Repository.WORK_STAGE, secondArg)));
-                        if (removeBlob.getBlobID() == null) {
+                        String removeID = removeBlob.getBlobID();
+                        if (removeID == null) {
                             //文件不存在于WORK_STAGE，因此要在上一次commit中进行查找
                             List<Blobs> currentBlobs = currentCommit.getBlobArray();
                             for (Blobs blob : currentBlobs) {
@@ -177,12 +178,12 @@ public class Main {
                             File thisFile = Utils.join(Repository.WORK_STAGE, secondArg);
                             if (thisFile.exists()) {  // 在工作目录下删除文件
                                 thisFile.delete();
+                            } else {
+                                // rm fileName 的 file 即不在STAGE_AREA也不在headCommit中，将报错
+                                System.out.println("No reason to remove the file.");
                             }
                         } else if (rmFlag == 3) {
                             Utils.writeObject(removeFile, removeBlob);  //添加到REMOVAL_AREA中
-                        } else {
-                            // rm fileName 的 file 即不在STAGE_AREA也不在headCommit中，将报错
-                            System.out.println("No reason to remove the file.");
                         }
                     }
                     break;
