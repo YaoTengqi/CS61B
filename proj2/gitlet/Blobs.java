@@ -67,9 +67,9 @@ public class Blobs implements Serializable {
      * @return
      */
     public static int trackFiles(List<Blobs> previousBlobList, Blobs currentBlob) {
-        int returnFlag = 0;
+        int returnFlag = -1;    // 上次commit不为空且blobs不存在于上次commit
         if (previousBlobList == null) {
-            return 0;   // blobs不存在或发生改变
+            return 0;   // 上次commit为空
         }
         for (int i = 0; i < previousBlobList.size(); i++) {
             String previousBlobName = previousBlobList.get(i).getBlobName();
@@ -83,7 +83,7 @@ public class Blobs implements Serializable {
                 }
             }
         }
-        return returnFlag;   // blobs不存在或发生改变
+        return returnFlag;
     }
 
     public static void addBlobs(Commit currentCommit, String blobFileName) throws IOException {

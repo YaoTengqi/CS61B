@@ -173,9 +173,12 @@ public class Main {
                         } else {
                             rmFlag = Blobs.trackFiles(currentCommit.getBlobArray(), removeBlob);
                         }
-                        if (rmFlag == 0) {
-                            // rm fileName 的 file 即不在STAGE_AREA也不在headCommit中，将报错
+                        if (rmFlag == -1) {
+                            // 不存在于上一次commit不存在于当前WORK_STAGE
                             System.out.println("No reason to remove the file.");
+                        } else if (rmFlag == 0) {
+                            // 不存在于上一次commit不存在于当前STAGE_STAGE
+//                            stageRemoveFile.delete();
                         } else if (rmFlag == 1 || rmFlag == 2) {
                             Utils.writeObject(removeFile, removeBlob);
                             File thisFile = Utils.join(Repository.WORK_STAGE, secondArg);
@@ -199,19 +202,24 @@ public class Main {
                     }
                     break;
                 case "global-log":
-                    List<Commit> globalLogCommitList = Commit.returnCommitList(currentCommit);
-                    for (int i = 0; i < globalLogCommitList.size(); i++) {
-                        Commit globalLogCommit = globalLogCommitList.get(i);
+                    List<String> globalLogFiles = Utils.plainFilenamesIn(Repository.COMMIT_AREA);
+                    for (String globalFileName : globalLogFiles) {
+                        File commitFile = new File(String.valueOf(Utils.join(Repository.COMMIT_AREA, globalFileName)));
+                        Commit globalLogCommit = Utils.readObject(commitFile, Commit.class);
 //                        System.out.println("===");
                         System.out.println("commit " + globalLogCommit.getCommitID());
                         System.out.println("Date: " + globalLogCommit.getTime());
                         System.out.println(globalLogCommit.getMessage());
-                        List<Blobs> previousBlobArray = globalLogCommit.getBlobArray();
-                        if (previousBlobArray != null) {
-                            for (Blobs blob : previousBlobArray) {
-                                System.out.println("Blobs: " + blob.getBlobID() + " " + blob.getBlobName());
-                            }
-                        }
+                        /**
+                         *  输出每个commit的全部Blobs信息
+                         *
+                         List<Blobs> previousBlobArray = globalLogCommit.getBlobArray();
+                         if (previousBlobArray != null) {
+                         for (Blobs blob : previousBlobArray) {
+                         System.out.println("Blobs: " + blob.getBlobID() + " " + blob.getBlobName());
+                         }
+                         }
+                         */
                         System.out.println();
                     }
                     break;
