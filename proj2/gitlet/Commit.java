@@ -95,8 +95,8 @@ public class Commit implements Serializable {
     /**
      * 将此commit写入COMMIT_AREA中
      */
-    public void writeCommit(File AREA, String commitName) throws IOException {
-        File newCommit = Utils.join(AREA, commitName + ".bin");
+    public void writeCommit(File area, String commitName) throws IOException {
+        File newCommit = Utils.join(area, commitName + ".bin");
         if (!newCommit.exists()) {
             newCommit.createNewFile();
             Utils.writeObject(newCommit, this);
@@ -110,9 +110,9 @@ public class Commit implements Serializable {
      *
      * @param fileNames
      */
-    public static void clearStageArea(List<String> fileNames, File clear_stage) {
+    public static void clearStageArea(List<String> fileNames, File clearStage) {
         for (String fileName : fileNames) {
-            File deletedFile = Utils.join(clear_stage, fileName);
+            File deletedFile = Utils.join(clearStage, fileName);
             deletedFile.delete();
         }
     }
@@ -157,7 +157,7 @@ public class Commit implements Serializable {
                                 tempBlobArray.add(i, blobArray.get(j));
                                 equalWithCurrent = false;
                             }
-                            if (command.equals("REMOVAL_AREA")) {//当操作删除区removal_area时，将该文件从blobArray中删除
+                            if (command.equals("REMOVAL_AREA")) { //当操作删除区removal_area时，将该文件从blobArray中删除
                                 tempBlobArray.remove(i);
                                 equalWithCurrent = false;
                             }
