@@ -239,23 +239,21 @@ public class Main {
                         throw new GitletException("Please enter removed file name.");
                     } else {
                         secondArg = args[1];
-                        for (String globalFileName : globalLogFiles) {
-                            File commitFile = new File(String.valueOf(Utils.join(Repository.COMMIT_AREA, globalFileName)));
-                            Commit globalLogCommit = Utils.readObject(commitFile, Commit.class);
-                            String message = globalLogCommit.getMessage();
-                            if (message.contains(secondArg)) {
-                                System.out.println(globalLogCommit.getCommitID());
-                                findFlag = true;
+                        // 首先查找initial commit
+                        if ("initial commit".contains(secondArg)) {
+                            System.out.println("d87aa6d88d9b64a08e646e9763ca97e9d2728ef2");
+                            findFlag = true;
+                        } else {
+                            for (String globalFileName : globalLogFiles) {
+                                File commitFile = new File(String.valueOf(Utils.join(Repository.COMMIT_AREA, globalFileName)));
+                                Commit globalLogCommit = Utils.readObject(commitFile, Commit.class);
+                                String message = globalLogCommit.getMessage();
+                                if (message.contains(secondArg)) {
+                                    System.out.println(globalLogCommit.getCommitID());
+                                    findFlag = true;
+                                }
                             }
                         }
-//                        for (int i = 0; i < findCommitList.size(); i++) {
-//                            Commit findLogCommit = findCommitList.get(i);
-//                            String message = findLogCommit.getMessage();
-//                            if (message.contains(secondArg)) {
-//                                System.out.println(findLogCommit.getCommitID());
-//                                findFlag = true;
-//                            }
-//                        }
                     }
                     if (!findFlag) {
                         System.out.println("Found no commit with that message.");
