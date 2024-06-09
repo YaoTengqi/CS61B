@@ -224,6 +224,11 @@ public class Main {
                          */
                         System.out.println();
                     }
+                    //打印initial commit
+                    System.out.println("===");
+                    System.out.println("commit " + "d87aa6d88d9b64a08e646e9763ca97e9d2728ef2");
+                            System.out.println("Date: " + "Wed Dec 31 18:00:00 1969 - 0600");
+                    System.out.println("initial commit");
                     break;
                 case "find":
                     List<Commit> findCommitList = Commit.returnCommitList(currentCommit);
