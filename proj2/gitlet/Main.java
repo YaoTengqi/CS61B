@@ -227,27 +227,38 @@ public class Main {
                     //打印initial commit
                     System.out.println("===");
                     System.out.println("commit " + "d87aa6d88d9b64a08e646e9763ca97e9d2728ef2");
-                            System.out.println("Date: " + "Wed Dec 31 18:00:00 1969 - 0600");
+                    System.out.println("Date: " + "Wed Dec 31 18:00:00 1969 - 0600");
                     System.out.println("initial commit");
                     break;
                 case "find":
-                    List<Commit> findCommitList = Commit.returnCommitList(currentCommit);
+                    //要从全部的commit中寻找，不能从头结点开始找
+                    globalLogFiles = Utils.plainFilenamesIn(Repository.COMMIT_AREA);
+//                    List<Commit> findCommitList = Commit.returnCommitList(currentCommit);
                     boolean findFlag = false;
                     if (args.length < 2) {
                         throw new GitletException("Please enter removed file name.");
                     } else {
                         secondArg = args[1];
-                        for (int i = 0; i < findCommitList.size(); i++) {
-                            Commit findLogCommit = findCommitList.get(i);
-                            String message = findLogCommit.getMessage();
+                        for (String globalFileName : globalLogFiles) {
+                            File commitFile = new File(String.valueOf(Utils.join(Repository.COMMIT_AREA, globalFileName)));
+                            Commit globalLogCommit = Utils.readObject(commitFile, Commit.class);
+                            String message = globalLogCommit.getMessage();
                             if (message.contains(secondArg)) {
-                                System.out.println(findLogCommit.getCommitID());
+                                System.out.println(globalLogCommit.getCommitID());
                                 findFlag = true;
                             }
                         }
+//                        for (int i = 0; i < findCommitList.size(); i++) {
+//                            Commit findLogCommit = findCommitList.get(i);
+//                            String message = findLogCommit.getMessage();
+//                            if (message.contains(secondArg)) {
+//                                System.out.println(findLogCommit.getCommitID());
+//                                findFlag = true;
+//                            }
+//                        }
                     }
                     if (!findFlag) {
-                        throw new GitletException("Found no commit with that message.");
+                        System.out.println("Found no commit with that message.");
                     }
                     break;
                 case "status":
