@@ -3,6 +3,7 @@ package gitlet;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.sql.Blob;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -78,12 +79,12 @@ public class Merge {
         List<Blobs> ancestorBlobList = ancestor.getBlobArray();
         List<Blobs> currentBlobList = currentCommit.getBlobArray();
         List<Blobs> otherBlobList = otherCommit.getBlobArray();
-        Set<Blobs> ancestorBlobID = new HashSet<>();
+        Set<String> ancestorBlobID = new HashSet<>();
         Set<String> ancestorBlobName = new HashSet<>();
         //将祖先commit的blobList转为hashSet
         if (ancestorBlobList != null) {
             for (Blobs ancestorBlob : ancestorBlobList) {
-                ancestorBlobID.add(ancestorBlob);
+                ancestorBlobID.add(ancestorBlob.getBlobID());
                 ancestorBlobName.add(ancestorBlob.getBlobName());
             }
             //以currentBlob为出发点
@@ -106,7 +107,7 @@ public class Merge {
                                 //在other中没有发生改变，直接写入master中发生改变的blob即可
                                 // 3.
                                 mergeBlobList.add(currentBlob);
-                            } else if (otherBlob != null) {
+                            } else {
                                 // 4.
                                 //在other中发生改变，产生了冲突(conflict)
                                 byte[] newContent = resolveConflict(currentBlob, otherBlob);
@@ -161,6 +162,13 @@ public class Merge {
                 }
             }
         }
+
+
+        //解决特殊冲突
+        List<Blobs> changeDeleteBlobList = resolveChangeDeleteFile(ancestorBlobList, currentBlobList, otherBlobList);
+
+        mergeBlobList.addAll(changeDeleteBlobList);
+
         return mergeBlobList;
     }
 
@@ -188,8 +196,18 @@ public class Merge {
      * @return
      */
     static byte[] resolveConflict(Blobs currentBlob, Blobs otherBlob) throws IOException {
-        byte[] currentContent = currentBlob.getContent();
-        byte[] otherContent = otherBlob.getContent();
+        byte[] currentContent = null;
+        if (currentBlob != null) {
+            currentContent = currentBlob.getContent();
+        }else{
+            currentContent = "".getBytes();
+        }
+        byte[] otherContent = null;
+        if (otherBlob != null) {
+            otherContent = otherBlob.getContent();
+        } else {
+            otherContent = "".getBytes();
+        }
         String headString = "<<<<<<< HEAD\n";
         String divideLine = "\n=======\n";
         String endLine = ">>>>>>>";
@@ -237,5 +255,56 @@ public class Merge {
             }
         }
         return deleteBlobs;
+    }
+
+
+    static List<Blobs> resolveChangeDeleteFile(List<Blobs> ancestorBlobList, List<Blobs> currentBlobList, List<Blobs> otherBlobList) throws IOException {
+        Set<String> currentBlobID = new HashSet<>();
+        Set<String> currentBlobName = new HashSet<>();
+        Set<String> otherBlobID = new HashSet<>();
+        Set<String> otherBlobName = new HashSet<>();
+        List<Blobs> mergeBlobList = new ArrayList<>();
+        for (Blobs currentBlob : currentBlobList) {
+            currentBlobID.add(currentBlob.getBlobID());
+            currentBlobName.add(currentBlob.getBlobName());
+        }
+        for (Blobs otherBlob : otherBlobList) {
+            otherBlobID.add(otherBlob.getBlobID());
+            otherBlobName.add(otherBlob.getBlobName());
+        }
+        //处理存在于祖先节点，并在一个branch中改变，另一个branch中删除的conflict情况
+        for (Blobs ancestorBlob : ancestorBlobList) {
+            String ancestorName = ancestorBlob.getBlobName();
+            if (currentBlobName.contains(ancestorName) && !otherBlobName.contains(ancestorName)) {   //祖先commit原来有此文件，但是在other branch中被删除了
+                if (!currentBlobID.contains(ancestorBlob.getBlobID())) {
+                    //在master中发生改变
+                    for (Blobs currentBlob : currentBlobList) {
+                        String currentName = currentBlob.getBlobName();
+                        if (currentName.equals(ancestorName)) {
+                            byte[] newContent = resolveConflict(currentBlob, null);
+                            Blobs newBlob = new Blobs(ancestorName, newContent);
+                            mergeBlobList.add(newBlob);
+                            break;
+                        }
+                    }
+
+                }
+            } else if (!currentBlobName.contains(ancestorName) && otherBlobName.contains(ancestorName)) {  //祖先commit原来有此文件，master branch中被删除了
+                if (!otherBlobID.contains(ancestorBlob.getBlobID())) {
+                    //在other中发生改变
+                    for (Blobs otherBlob : otherBlobList) {
+                        String otherName = otherBlob.getBlobName();
+                        if (otherName.equals(ancestorName)) {
+                            byte[] newContent = resolveConflict(null, otherBlob);
+                            Blobs newBlob = new Blobs(ancestorName, newContent);
+                            mergeBlobList.add(newBlob);
+                            break;
+                        }
+                    }
+
+                }
+            }
+        }
+        return mergeBlobList;
     }
 }
