@@ -146,7 +146,7 @@ public class Commit implements Serializable {
                 equalWithCurrent = false;
             } else {
                 tempBlobArray.addAll(previousBlobArray);
-                boolean equalName = false;
+                int equalName = 0;
                 for (int i = 0; i < previousBlobArray.size(); i++) {
                     for (int j = 0; j < blobArray.size(); j++) {
                         if (blobArray.get(j).getBlobName().equals(previousBlobArray.get(i).getBlobName())) {   // 出现同名文件时
@@ -161,14 +161,14 @@ public class Commit implements Serializable {
                                 tempBlobArray.remove(i);
                                 equalWithCurrent = false;
                             }
-                            equalName = true;
+                            equalName = equalName + 1;
                         }
                     }
                 }
-                if (!equalName && command.equals("STAGE_AREA")) { //当没有同名文件且操作暂存区时，新增文件到commit中
+                if (equalName != blobArray.size() && command.equals("STAGE_AREA")) { //当没有同名文件且操作暂存区时，新增文件到commit中
                     tempBlobArray.addAll(blobArray);
                     equalWithCurrent = false;
-                } else if (!equalName && command.equals("REMOVAL_AREA")) {
+                } else if (equalName != blobArray.size() && command.equals("REMOVAL_AREA")) {
                     equalWithCurrent = true;
                 }
             }

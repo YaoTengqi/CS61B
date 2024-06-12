@@ -12,6 +12,9 @@ import java.util.Set;
  * 专门处理merge操作的类，包括各种相关的操作函数
  */
 public class Merge {
+
+    private static boolean printConflict = false;
+
     /**
      * 找到两个branch的最近祖先节点
      *
@@ -188,7 +191,7 @@ public class Merge {
         byte[] currentContent = currentBlob.getContent();
         byte[] otherContent = otherBlob.getContent();
         String headString = "<<<<<<< HEAD\n";
-        String divideLine = "=======\n";
+        String divideLine = "\n=======\n";
         String endLine = ">>>>>>>";
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         bos.write(headString.getBytes());
@@ -197,7 +200,10 @@ public class Merge {
         bos.write(otherContent);
         bos.write(endLine.getBytes());
         byte[] newContent = bos.toByteArray();
-        System.out.println("Encountered a merge conflict.");
+        if (!printConflict) {
+            System.out.println("Encountered a merge conflict.");
+            printConflict = true;
+        }
         return newContent;
     }
 
