@@ -358,40 +358,41 @@ public class Main {
                                 }
                                 if (!branchExist) {
                                     System.out.println("No such branch exists.");
-                                }
-                                // 3.2 切换文件版本
-                                for (String workFile : workStageFileNames) {
-                                    boolean fileExists = false;
-                                    try {
-                                        fileExists = Checkout.checkoutFile(currentCommit, workFile, true);
-                                    } catch (IOException e) {
-                                        throw new RuntimeException(e);
+                                } else {
+                                    // 3.2 切换文件版本
+                                    for (String workFile : workStageFileNames) {
+                                        boolean fileExists = false;
+                                        try {
+                                            fileExists = Checkout.checkoutFile(currentCommit, workFile, true);
+                                        } catch (IOException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                        if (!fileExists) {
+                                            // 当workStage中的文件在other branch中文件不存在时将其删除
+                                            File removeWorkFile = new File(String.valueOf(Utils.join(Repository.WORK_STAGE, workFile)));
+                                            removeWorkFile.delete();
+                                        }
                                     }
-                                    if (!fileExists) {
-                                        // 当workStage中的文件在other branch中文件不存在时将其删除
-                                        File removeWorkFile = new File(String.valueOf(Utils.join(Repository.WORK_STAGE, workFile)));
-                                        removeWorkFile.delete();
-                                    }
-                                }
-                                // 3.3 添加当前WORK_AREA不存在但存在于other branch的文件
-                                List<Blobs> currentBlobList = currentCommit.getBlobArray();
-                                if (currentBlobList != null) {
-                                    for (Blobs currentBlob : currentBlobList) {
-                                        String currentName = currentBlob.getBlobName();
-                                        String[] parts = currentName.split("/");
-                                        String realFileName = parts[parts.length - 1]; // 获取真正的文件名
-                                        if (!workStageFileNames.contains(realFileName)) {
-                                            try {
-                                                Checkout.checkoutFile(currentCommit, realFileName, true);
-                                            } catch (IOException e) {
-                                                throw new RuntimeException(e);
+                                    // 3.3 添加当前WORK_AREA不存在但存在于other branch的文件
+                                    List<Blobs> currentBlobList = currentCommit.getBlobArray();
+                                    if (currentBlobList != null) {
+                                        for (Blobs currentBlob : currentBlobList) {
+                                            String currentName = currentBlob.getBlobName();
+                                            String[] parts = currentName.split("/");
+                                            String realFileName = parts[parts.length - 1]; // 获取真正的文件名
+                                            if (!workStageFileNames.contains(realFileName)) {
+                                                try {
+                                                    Checkout.checkoutFile(currentCommit, realFileName, true);
+                                                } catch (IOException e) {
+                                                    throw new RuntimeException(e);
+                                                }
                                             }
                                         }
                                     }
+                                    // 3.4 清空缓存区
+                                    Commit.clearStageArea(stageFileNames, Repository.STAGE_AREA);
+                                    Commit.clearStageArea(removeFileNames, Repository.REMOVAL_AREA);
                                 }
-                                // 3.4 清空缓存区
-                                Commit.clearStageArea(stageFileNames, Repository.STAGE_AREA);
-                                Commit.clearStageArea(removeFileNames, Repository.REMOVAL_AREA);
                             }
                         } else if (args.length == 3) {
                             // 1. java gitlet.Main checkout -- [file name]
