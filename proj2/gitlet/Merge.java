@@ -258,6 +258,14 @@ public class Merge {
     }
 
 
+    /**
+     * //处理存在于祖先节点，并在一个branch中改变，另一个branch中删除的conflict情况
+     * @param ancestorBlobList
+     * @param currentBlobList
+     * @param otherBlobList
+     * @return
+     * @throws IOException
+     */
     static List<Blobs> resolveChangeDeleteFile(List<Blobs> ancestorBlobList, List<Blobs> currentBlobList, List<Blobs> otherBlobList) throws IOException {
         Set<String> currentBlobID = new HashSet<>();
         Set<String> currentBlobName = new HashSet<>();
@@ -272,7 +280,7 @@ public class Merge {
             otherBlobID.add(otherBlob.getBlobID());
             otherBlobName.add(otherBlob.getBlobName());
         }
-        //处理存在于祖先节点，并在一个branch中改变，另一个branch中删除的conflict情况
+
         for (Blobs ancestorBlob : ancestorBlobList) {
             String ancestorName = ancestorBlob.getBlobName();
             if (currentBlobName.contains(ancestorName) && !otherBlobName.contains(ancestorName)) {   //祖先commit原来有此文件，但是在other branch中被删除了
