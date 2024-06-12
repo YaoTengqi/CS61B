@@ -329,7 +329,7 @@ public class Main {
                             secondArg = args[1];
                             // 3. java gitlet.Main checkout [branch name]
                             if (currentCommit.getBranch().equals(secondArg)) {
-                                throw new GitletException("No need to checkout the current branch.");
+                                System.out.println("No need to checkout the current branch.");
                             } else {
                                 branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
                                 boolean branchExist = false;
@@ -359,7 +359,7 @@ public class Main {
                                     }
                                 }
                                 if (!branchExist) {
-                                    throw new GitletException("No such branch exists.");
+                                    System.out.println("No such branch exists.");
                                 }
                             }
                         } else if (args.length == 3) {
@@ -374,12 +374,17 @@ public class Main {
                         } else if (args.length == 4) {
                             // 2. java gitlet.Main checkout [commit id] -- [file name]
                             String commitID = args[1];
+                            String operands = args[2];
                             String fileName = args[3];
                             boolean resetFlag = false;
-                            try {
-                                Checkout.checkoutCommitFile(currentCommit, fileName, commitID, resetFlag);
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
+                            if (!operands.equals("--")) {
+                                System.out.println("Incorrect operands.");
+                            } else {
+                                try {
+                                    Checkout.checkoutCommitFile(currentCommit, fileName, commitID, resetFlag);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
                             }
                         }
 

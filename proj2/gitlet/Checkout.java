@@ -102,7 +102,7 @@ public class Checkout {
             }
         }
         if (!commitExists) {
-            throw new GitletException("No commit with that id exists.");
+            System.out.println("No commit with that id exists.");
         }
         if (!fileExists) {
             File workFile = new File(Repository.WORK_STAGE + fileName);
