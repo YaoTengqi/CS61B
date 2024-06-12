@@ -357,7 +357,7 @@ public class Main {
                                     }
                                 }
                                 if (!branchExist) {
-                                    System.out.println("No such branch exists.");
+                                    System.out.println("A branch with that name already exists.");
                                 } else {
                                     // 3.2 切换文件版本
                                     for (String workFile : workStageFileNames) {
@@ -442,7 +442,7 @@ public class Main {
                         String branchName = args[1];
                         branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
                         File branchFile = Checkout.findBranch(currentCommit, branchName, branchFileNames);
-                        if (branchFile.exists()) {
+                        if (branchFile != null && branchFile.exists()) {
                             branchFile.delete();
                         }
                     }

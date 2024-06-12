@@ -101,7 +101,7 @@ public class Commit implements Serializable {
             newCommit.createNewFile();
             Utils.writeObject(newCommit, this);
         } else {
-            System.out.println("This commit already exists.");
+            System.out.println("A branch with that name already exists.");
         }
     }
 

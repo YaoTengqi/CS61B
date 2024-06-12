@@ -139,7 +139,7 @@ public class Checkout {
         boolean branchExist = false;
         File branchFile = null;
         if (currentCommit.getBranch().equals(branchName)) {
-            throw new GitletException("Cannot remove the current branch.");
+            System.out.println("Cannot remove the current branch.");
         }
         branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
         for (String branchFileName : branchFileNames) {
@@ -151,7 +151,7 @@ public class Checkout {
             }
         }
         if (!branchExist) {
-            throw new GitletException("A branch with that name does not exist.");
+            System.out.println("A branch with that name does not exist.");
         }
         return branchFile;
     }
