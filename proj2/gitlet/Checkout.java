@@ -27,7 +27,7 @@ public class Checkout {
             }
         }
         for (String untrackedFileName : untrackedFileNames) {
-            if (fileName.equals("/" + untrackedFileName)) {
+            if (fileName.equals(untrackedFileName)) {
                 return true;
             }
         }
@@ -73,9 +73,9 @@ public class Checkout {
     /**
      * 回退到特定commit版本(通过commitID查询)的指定file
      *
-     * @param currentCommit
-     * @param fileName
-     * @param commitID
+     * @param currentCommit 当前的commit
+     * @param fileName      要切换的文件名
+     * @param commitID      要回退的commit版本ID，用于寻找相应的commit
      * @throws IOException
      */
     public static Commit checkoutCommitFile(Commit currentCommit, String fileName, String commitID, boolean resetFlag) throws IOException {

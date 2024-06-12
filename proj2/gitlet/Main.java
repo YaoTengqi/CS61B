@@ -225,7 +225,7 @@ public class Main {
                     //打印initial commit
                     System.out.println("===");
                     System.out.println("commit " + "d87aa6d88d9b64a08e646e9763ca97e9d2728ef2");
-                    System.out.println("Date: " + "Wed Dec 31 18:00:00 1969 - 0600");
+                    System.out.println("Date: " + "Wed Dec 31 18:00:00 1969 -0600");
                     System.out.println("initial commit");
                     System.out.println();
                     break;
@@ -328,70 +328,84 @@ public class Main {
                             if (currentCommit.getBranch().equals(secondArg)) {
                                 System.out.println("No need to checkout the current branch.");
                             } else {
-                                branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
-                                boolean branchExist = false;
-                                // 3.1 找到要切换的branch名称
-                                for (String branchFileName : branchFileNames) {
-                                    if (branchFileName.equals(secondArg + ".bin")) {
-                                        branchExist = true;
-                                        File branchFile = new File(String.valueOf(Utils.join(Repository.HEAD_AREA, branchFileName)));
-                                        Commit branchCommit = Utils.readObject(branchFile, Commit.class);
-                                        // 将当前branch写回HEAD_AREA中保留此branch
-                                        File currentBranchFile = new File(String.valueOf(Utils.join(Repository.HEAD_AREA, currentCommit.getBranch() + ".bin")));
-                                        if (currentBranchFile.exists()) {
-                                            currentBranchFile.delete();
-                                        }
-                                        try {
-                                            currentCommit.writeCommit(Repository.HEAD_AREA, currentCommit.getBranch());
-                                        } catch (IOException e) {
-                                            throw new RuntimeException(e);
-                                        }
-                                        // 切换到新branch
-                                        currentCommit = branchCommit;
-                                        headCommit.delete();
-                                        try {
-                                            currentCommit.writeCommit(Repository.HEAD_AREA, "head");
-                                        } catch (IOException e) {
-                                            throw new RuntimeException(e);
-                                        }
+                                boolean isUntracked = false;
+                                boolean fileExists = false;
+                                // 3.1 检查untracked file
+                                for (String workFile : workStageFileNames) {
+                                    try {
+                                        isUntracked = Checkout.checkUntracked(currentCommit, workFile);
+                                    } catch (IOException e) {
+                                        throw new RuntimeException(e);
                                     }
                                 }
-                                if (!branchExist) {
-                                    System.out.println("No such branch exists.");
-                                } else {
-                                    // 3.2 切换文件版本
-                                    for (String workFile : workStageFileNames) {
-                                        boolean fileExists = false;
-                                        try {
-                                            fileExists = Checkout.checkoutFile(currentCommit, workFile, true);
-                                        } catch (IOException e) {
-                                            throw new RuntimeException(e);
-                                        }
-                                        if (!fileExists) {
-                                            // 当workStage中的文件在other branch中文件不存在时将其删除
-                                            File removeWorkFile = new File(String.valueOf(Utils.join(Repository.WORK_STAGE, workFile)));
-                                            removeWorkFile.delete();
-                                        }
-                                    }
-                                    // 3.3 添加当前WORK_AREA不存在但存在于other branch的文件
-                                    List<Blobs> currentBlobList = currentCommit.getBlobArray();
-                                    if (currentBlobList != null) {
-                                        for (Blobs currentBlob : currentBlobList) {
-                                            String currentName = currentBlob.getBlobName();
-                                            String[] parts = currentName.split("/");
-                                            String realFileName = parts[parts.length - 1]; // 获取真正的文件名
-                                            if (!workStageFileNames.contains(realFileName)) {
-                                                try {
-                                                    Checkout.checkoutFile(currentCommit, realFileName, true);
-                                                } catch (IOException e) {
-                                                    throw new RuntimeException(e);
-                                                }
+                                branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
+                                boolean branchExist = false;
+                                if (!isUntracked) {
+                                    // 3.2 找到要切换的branch名称
+                                    for (String branchFileName : branchFileNames) {
+                                        if (branchFileName.equals(secondArg + ".bin")) {
+                                            branchExist = true;
+                                            File branchFile = new File(String.valueOf(Utils.join(Repository.HEAD_AREA, branchFileName)));
+                                            Commit branchCommit = Utils.readObject(branchFile, Commit.class);
+                                            // 将当前branch写回HEAD_AREA中保留此branch
+                                            File currentBranchFile = new File(String.valueOf(Utils.join(Repository.HEAD_AREA, currentCommit.getBranch() + ".bin")));
+                                            if (currentBranchFile.exists()) {
+                                                currentBranchFile.delete();
+                                            }
+                                            try {
+                                                currentCommit.writeCommit(Repository.HEAD_AREA, currentCommit.getBranch());
+                                            } catch (IOException e) {
+                                                throw new RuntimeException(e);
+                                            }
+                                            // 切换到新branch
+                                            currentCommit = branchCommit;
+                                            headCommit.delete();
+                                            try {
+                                                currentCommit.writeCommit(Repository.HEAD_AREA, "head");
+                                            } catch (IOException e) {
+                                                throw new RuntimeException(e);
                                             }
                                         }
                                     }
-                                    // 3.4 清空缓存区
-                                    Commit.clearStageArea(stageFileNames, Repository.STAGE_AREA);
-                                    Commit.clearStageArea(removeFileNames, Repository.REMOVAL_AREA);
+                                    if (!branchExist) {
+                                        System.out.println("No such branch exists.");
+                                    } else {
+                                        // 3.3 切换文件版本
+                                        for (String workFile : workStageFileNames) {
+                                            try {
+                                                fileExists = Checkout.checkoutFile(currentCommit, workFile, true);
+                                            } catch (IOException e) {
+                                                throw new RuntimeException(e);
+                                            }
+                                            if (!fileExists) {
+                                                // 当workStage中的文件在other branch中文件不存在时将其删除
+                                                File removeWorkFile = new File(String.valueOf(Utils.join(Repository.WORK_STAGE, workFile)));
+                                                removeWorkFile.delete();
+                                            }
+
+                                        }
+                                        // 3.4 添加当前WORK_AREA不存在但存在于other branch的文件
+                                        List<Blobs> currentBlobList = currentCommit.getBlobArray();
+                                        if (currentBlobList != null) {
+                                            for (Blobs currentBlob : currentBlobList) {
+                                                String currentName = currentBlob.getBlobName();
+                                                String[] parts = currentName.split("/");
+                                                String realFileName = parts[parts.length - 1]; // 获取真正的文件名
+                                                if (!workStageFileNames.contains(realFileName)) {
+                                                    try {
+                                                        Checkout.checkoutFile(currentCommit, realFileName, true);
+                                                    } catch (IOException e) {
+                                                        throw new RuntimeException(e);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        // 3.5 清空缓存区
+                                        Commit.clearStageArea(stageFileNames, Repository.STAGE_AREA);
+                                        Commit.clearStageArea(removeFileNames, Repository.REMOVAL_AREA);
+                                    }
+                                } else {
+                                    System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
                                 }
                             }
                         } else if (args.length == 3) {
