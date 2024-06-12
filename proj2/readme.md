@@ -117,10 +117,10 @@ Repository负责对文件夹进行操作
 |              `findSplitAncestor(master, other)`              |          `Commit`           |   找到两个branch的最近祖先节点(**Latest ancestor commit**)   |
 |          `findSameBlob(currentCommit, otherCommit)`          |        `List<Blobs>`        | 找到两个`commit`的同名`BlobList`同时得到不同名的`BlobList`，分别为`currentDifferentBlobList`以及`otherDifferentBlobList` |
 | `sameBlobListTraversal(List<Blobs> sameBlobList, Commit ancestor)` | `List<Blobs> mergeBlobList` | 对同名`Blob`进行处理，并处理后的`Blob`写入`mergeBlobList`中  |
-| `addDifferentBlobs(List<Blobs> mergeBlobList, List<Blobs> currentAddBlobList, List<Blobs> otherAddBlobList)` |              /              |    对两个branch中不同的addBlob直接添加到`mergeBlobList`中    |
-| `removeDifferentBlobs(List<Blobs> mergeBlobList, List<Blobs> currentRemoveBlobList, List<Blobs> otherRemoveBlobList)` |              /              |  对两个branch中不同的removeBlob直接从`mergeBlobList`中移除   |
 |                    `findSameNameInOther`                     |           `Blobs`           | 通过文件名找到other branch中相同文件名的blob，为了与ancestor以及master中的内容进行比较 |
 |                      `resolveConflict`                       |           `Blobs`           | 解决文件冲突的问题，即将当前branch的内容写在前面，而把另一branch的内容写在后面 |
+| `findDeleteBlobs(Commit ancestor, List<Blobs> mergeBlobList)` |  `List<Blobs> deleteBlobs`  | 当在祖先commit中存在的blob在任意一个branch中不复存在时将其删除(如果在WORK_AREA中存在，也要删除工作区文件) |
+|                                                              |                             |                                                              |
 |                                                              |                             |                                                              |
 
 

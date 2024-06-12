@@ -488,14 +488,21 @@ public class Main {
                         branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
                         File branchFile = Checkout.findBranch(currentCommit, branchName, branchFileNames);
                         Commit otherCommit = Utils.readObject(branchFile, Commit.class);
+                        // 1. 寻找祖先节点
                         Commit ancestor = Merge.findSplitAncestor(currentCommit, otherCommit);
+                        // 2. 寻找同名文件
                         Set<String> sameNameBlobName = Merge.findSameBlob(currentCommit, otherCommit);
                         List<Blobs> mergeBlobList = null;
+                        List<Blobs> deleteBlobList = null;
                         try {
+                            // 3. 算出合并后的blobList
                             mergeBlobList = Merge.sameBlobListTraversal(sameNameBlobName, ancestor, currentCommit, otherCommit);
+                            // 4. 算出要删除的blobList
+                            deleteBlobList = Merge.findDeleteBlobs(ancestor, mergeBlobList);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
+                        // 5. 准备mergeCommit的message
                         String mergeMessage = "Merged " + otherCommit.getBranch() + " into " + currentCommit.getBranch() + ".";
 //                        Merged [given branch name] into [current branch name].
                         dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z", Locale.ENGLISH);
@@ -504,22 +511,25 @@ public class Main {
                         String formatDate = dateFormat.format(currentTime);
                         mergeCommit newCommit = null;
                         try {
+                            // 6. 写新的commit并更改头指针
                             newCommit = new mergeCommit(currentCommit.getBranch(), mergeMessage, formatDate, mergeBlobList, currentCommit.getParent(), otherCommit.getParent());
+                            newCommit.writeCommit(Repository.COMMIT_AREA, newCommit.getCommitID()); // 将commit写入COMMIT_AREA
+                            headCommit.delete();
+                            newCommit.writeCommit(Repository.HEAD_AREA, "head");// 头指针指向最新的commit
                         } catch (NoSuchAlgorithmException e) {
                             throw new RuntimeException(e);
-                        }
-                        try {
-                            newCommit.writeCommit(Repository.COMMIT_AREA, newCommit.getCommitID()); // 将commit写入COMMIT_AREA
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
-                        headCommit.delete();
-                        try {
-                            newCommit.writeCommit(Repository.HEAD_AREA, "head");// 头指针指向最新的commit
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
+
+                        // 7. 在工作区删除deleteBlobsList中的文件
+                        for (Blobs deleteBlob : deleteBlobList) {
+                            String deleteName = deleteBlob.getBlobName();
+                            File deleteFile = new File(deleteName);
+                            deleteFile.delete();
                         }
-                        // 清空缓存区
+
+                        // 8. 清空缓存区
                         Commit.clearStageArea(stageFileNames, Repository.STAGE_AREA);
                         Commit.clearStageArea(removeFileNames, Repository.REMOVAL_AREA);
                     }
