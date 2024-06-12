@@ -528,8 +528,16 @@ public class Main {
                             File deleteFile = new File(deleteName);
                             deleteFile.delete();
                         }
-
-                        // 8. 清空缓存区
+                        // 8. 在工作区添加mergeList中的文件
+                        for (Blobs mergeBlob : mergeBlobList) {
+                            String mergeName = mergeBlob.getBlobName();
+                            File addFile = new File(mergeName);
+                            if (!addFile.exists()) {
+                                String content = new String(mergeBlob.getContent());
+                                Utils.writeContents(addFile, content);
+                            }
+                        }
+                        // 9. 清空缓存区
                         Commit.clearStageArea(stageFileNames, Repository.STAGE_AREA);
                         Commit.clearStageArea(removeFileNames, Repository.REMOVAL_AREA);
                     }
