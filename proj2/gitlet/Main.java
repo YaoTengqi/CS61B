@@ -357,7 +357,7 @@ public class Main {
                                     }
                                 }
                                 if (!branchExist) {
-                                    System.out.println("A branch with that name already exists.");
+                                    System.out.println("No such branch exists.");
                                 } else {
                                     // 3.2 切换文件版本
                                     for (String workFile : workStageFileNames) {
