@@ -1,8 +1,5 @@
 package gitlet;
 
-
-import jdk.jshell.execution.Util;
-
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
@@ -24,6 +21,7 @@ public class Main {
         File headCommit = new File(Repository.HEAD_AREA + "/head.bin");
         Commit currentCommit = null;
         List<String> stageFileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
+        List<String> workStageFileNames = Utils.plainFilenamesIn(Repository.WORK_STAGE);
         List<String> removeFileNames = Utils.plainFilenamesIn(Repository.REMOVAL_AREA);
         if (headCommit.exists()) {
             currentCommit = Utils.readObject(headCommit, Commit.class);
@@ -293,7 +291,6 @@ public class Main {
                     }
                     System.out.println();
                     System.out.println("=== Modifications Not Staged For Commit ===");
-                    List<String> workStageFileNames = Utils.plainFilenamesIn(Repository.WORK_STAGE);
                     for (String workStageFile : workStageFileNames) {
                         String fileName = String.valueOf(Utils.join(Repository.WORK_STAGE, workStageFile));
                         Blobs blob = new Blobs(fileName);
@@ -333,13 +330,14 @@ public class Main {
                             } else {
                                 branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
                                 boolean branchExist = false;
+                                // 3.1 找到要切换的branch名称
                                 for (String branchFileName : branchFileNames) {
                                     if (branchFileName.equals(secondArg + ".bin")) {
                                         branchExist = true;
                                         File branchFile = new File(String.valueOf(Utils.join(Repository.HEAD_AREA, branchFileName)));
                                         Commit branchCommit = Utils.readObject(branchFile, Commit.class);
                                         // 将当前branch写回HEAD_AREA中保留此branch
-                                        File currentBranchFile = new File(String.valueOf(Utils.join(Repository.HEAD_AREA, currentCommit.getBranch(), ".bin")));
+                                        File currentBranchFile = new File(String.valueOf(Utils.join(Repository.HEAD_AREA, currentCommit.getBranch() + ".bin")));
                                         if (currentBranchFile.exists()) {
                                             currentBranchFile.delete();
                                         }
@@ -361,6 +359,39 @@ public class Main {
                                 if (!branchExist) {
                                     System.out.println("No such branch exists.");
                                 }
+                                // 3.2 切换文件版本
+                                for (String workFile : workStageFileNames) {
+                                    boolean fileExists = false;
+                                    try {
+                                        fileExists = Checkout.checkoutFile(currentCommit, workFile, true);
+                                    } catch (IOException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                    if (!fileExists) {
+                                        // 当workStage中的文件在other branch中文件不存在时将其删除
+                                        File removeWorkFile = new File(String.valueOf(Utils.join(Repository.WORK_STAGE, workFile)));
+                                        removeWorkFile.delete();
+                                    }
+                                }
+                                // 3.3 添加当前WORK_AREA不存在但存在于other branch的文件
+                                List<Blobs> currentBlobList = currentCommit.getBlobArray();
+                                if (currentBlobList != null) {
+                                    for (Blobs currentBlob : currentBlobList) {
+                                        String currentName = currentBlob.getBlobName();
+                                        String[] parts = currentName.split("/");
+                                        String realFileName = parts[parts.length - 1]; // 获取真正的文件名
+                                        if (!workStageFileNames.contains(realFileName)) {
+                                            try {
+                                                Checkout.checkoutFile(currentCommit, realFileName, true);
+                                            } catch (IOException e) {
+                                                throw new RuntimeException(e);
+                                            }
+                                        }
+                                    }
+                                }
+                                // 3.4 清空缓存区
+                                Commit.clearStageArea(stageFileNames, Repository.STAGE_AREA);
+                                Commit.clearStageArea(removeFileNames, Repository.REMOVAL_AREA);
                             }
                         } else if (args.length == 3) {
                             // 1. java gitlet.Main checkout -- [file name]

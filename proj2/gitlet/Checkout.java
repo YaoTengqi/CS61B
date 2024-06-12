@@ -49,7 +49,7 @@ public class Checkout {
         boolean fileExists = false;
         if (previousBlobArray == null && !resetFlag) {
             System.out.println("File does not exist in that commit.");
-        } else {
+        } else if (previousBlobArray != null) {
             for (Blobs blob : previousBlobArray) {
                 if (checkoutFileName.equals(blob.getBlobName())) {
                     fileExists = true;
