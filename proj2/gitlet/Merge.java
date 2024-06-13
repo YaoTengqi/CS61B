@@ -4,10 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Blob;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 专门处理merge操作的类，包括各种相关的操作函数
@@ -199,7 +196,7 @@ public class Merge {
         byte[] currentContent = null;
         if (currentBlob != null) {
             currentContent = currentBlob.getContent();
-        }else{
+        } else {
             currentContent = "".getBytes();
         }
         byte[] otherContent = null;
@@ -209,14 +206,16 @@ public class Merge {
             otherContent = "".getBytes();
         }
         String headString = "<<<<<<< HEAD\n";
-        String divideLine = "\n=======\n";
+        String divideLine = "\n=======";
         String endLine = ">>>>>>>";
+        String fileContent = headString + new String(currentContent) + divideLine + "\n" + new String(otherContent) + endLine;
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        bos.write(headString.getBytes());
-        bos.write(currentContent);
-        bos.write(divideLine.getBytes());
-        bos.write(otherContent);
-        bos.write(endLine.getBytes());
+//        bos.write(headString.getBytes());
+//        bos.write(currentContent);
+//        bos.write(divideLine.getBytes());
+//        bos.write(otherContent);
+//        bos.write(endLine.getBytes());
+        bos.write(fileContent.getBytes());
         byte[] newContent = bos.toByteArray();
         if (!printConflict) {
             System.out.println("Encountered a merge conflict.");
@@ -260,6 +259,7 @@ public class Merge {
 
     /**
      * //处理存在于祖先节点，并在一个branch中改变，另一个branch中删除的conflict情况
+     *
      * @param ancestorBlobList
      * @param currentBlobList
      * @param otherBlobList
