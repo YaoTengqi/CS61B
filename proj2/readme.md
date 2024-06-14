@@ -123,7 +123,9 @@ Repository负责对文件夹进行操作
 |                                                              |                             |                                                              |
 |                                                              |                             |                                                              |
 
+#### 问题
 
+1. merge后的commit应该有两个parent commit，因此寻找祖先节点时也应该根据这**两个**parent commit寻找...
 
 ## Persistence
 
