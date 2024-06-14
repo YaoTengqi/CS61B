@@ -139,7 +139,7 @@ public class Checkout {
         boolean branchExist = false;
         File branchFile = null;
         if (currentCommit.getBranch().equals(branchName)) {
-            System.out.println("Cannot merge a branch with itself.");
+            System.out.println("Cannot remove the current branch.");
             return null;
         }
         branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
