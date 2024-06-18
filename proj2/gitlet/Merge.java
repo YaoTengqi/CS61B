@@ -3,6 +3,7 @@ package gitlet;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Blob;
 import java.util.*;
 
@@ -20,14 +21,39 @@ public class Merge {
      * @param other
      * @return
      */
-    public static Commit findSplitAncestor(Commit master, Commit other) {
+    public static Commit findSplitAncestor(mergeCommit master, mergeCommit other) {
         Commit ancestor = null;
         Set<String> masterIDSet = new HashSet<>();
+        Commit secondMaster = master.getSecondParent();
+        Commit secondOther = other.getSecondParent();
         //获取master的commitID集合
         while (master != null) {
             masterIDSet.add(master.getCommitID());
-            master = master.getParent();
+            Commit tempCommit = master.getParent();
+            if (tempCommit != null) {
+                try {
+                    master = new mergeCommit(tempCommit.getBranch(), tempCommit.getMessage(), tempCommit.getTime(), tempCommit.getBlobArray(), tempCommit.getParent(), null);
+                } catch (NoSuchAlgorithmException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                master = null;
+            }
         }
+        while (secondMaster != null) {
+            masterIDSet.add(secondMaster.getCommitID());
+            Commit tempCommit = secondMaster.getParent();
+            if (tempCommit != null) {
+                try {
+                    secondMaster = new mergeCommit(tempCommit.getBranch(), tempCommit.getMessage(), tempCommit.getTime(), tempCommit.getBlobArray(), tempCommit.getParent(), null);
+                } catch (NoSuchAlgorithmException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                secondMaster = null;
+            }
+        }
+
         //遍历查找
         while (other != null) {
             String otherID = other.getCommitID();
@@ -35,7 +61,34 @@ public class Merge {
                 ancestor = other;
                 break;
             }
-            other = other.getParent();
+            Commit tempCommit = other.getParent();
+            if (tempCommit != null) {
+                try {
+                    other = new mergeCommit(tempCommit.getBranch(), tempCommit.getMessage(), tempCommit.getTime(), tempCommit.getBlobArray(), tempCommit.getParent(), null);
+                } catch (NoSuchAlgorithmException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                other = null;
+            }
+        }
+        //遍历查找
+        while (secondOther != null && ancestor != null) {
+            String otherID = secondOther.getCommitID();
+            if (masterIDSet.contains(otherID)) {
+                ancestor = secondOther;
+                break;
+            }
+            Commit tempCommit = secondOther.getParent();
+            if (tempCommit != null) {
+                try {
+                    secondOther = new mergeCommit(tempCommit.getBranch(), tempCommit.getMessage(), tempCommit.getTime(), tempCommit.getBlobArray(), tempCommit.getParent(), null);
+                } catch (NoSuchAlgorithmException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                secondOther = null;
+            }
         }
         return ancestor;
     }
@@ -139,27 +192,29 @@ public class Merge {
 //                }
                 }
             }
-        }
 
-        //以otherBlob为出发点
-        if (otherBlobList != null) {
-            for (Blobs otherBlob : otherBlobList) {
-                String otherName = otherBlob.getBlobName();
-                if (!sameBlobList.contains(otherName)) {
-                    //同名文件已在"以currentBlob为出发点"中处理完，现在只需处理otherBlob的非同名Blobs
-                    if (!ancestorBlobName.contains(otherName)) {
-                        // 9.
-                        //不包含此blob但不是同名blob说明是在other中新加的，可直接写入此blob
-                        mergeBlobList.add(otherBlob);
-                    }
+            //以otherBlob为出发点
+            if (otherBlobList != null) {
+                for (Blobs otherBlob : otherBlobList) {
+                    String otherName = otherBlob.getBlobName();
+                    if (!sameBlobList.contains(otherName)) {
+                        //同名文件已在"以currentBlob为出发点"中处理完，现在只需处理otherBlob的非同名Blobs
+                        if (!ancestorBlobName.contains(otherName)) {
+                            // 9.
+                            //不包含此blob但不是同名blob说明是在other中新加的，可直接写入此blob
+                            mergeBlobList.add(otherBlob);
+                        }
 //                else{
 //                    10.
 //                    //包含此blob但不是同名blob，说明在master中此名blob被删除，则mergeList中也应该被删除
 //                }
+                    }
                 }
             }
+        } else {
+            mergeBlobList.addAll(currentBlobList);
+            mergeBlobList.addAll(otherBlobList);
         }
-
 
         //解决特殊冲突
         List<Blobs> changeDeleteBlobList = resolveChangeDeleteFile(ancestorBlobList, currentBlobList, otherBlobList);
@@ -235,22 +290,24 @@ public class Merge {
         List<Blobs> deleteBlobs = new ArrayList<>();
 
         List<Blobs> ancestorBlobList = ancestor.getBlobArray();
-        for (Blobs ancestorBlob : ancestorBlobList) {
-            String ancestorPath = ancestorBlob.getBlobName();
-            String[] ancestorParts = ancestorPath.split("/");
-            String ancestorName = ancestorParts[ancestorParts.length - 1]; // 获取真正的文件名
-            boolean blobExists = false;
-            for (Blobs mergeBlob : mergeBlobList) {
-                String mergePath = ancestorBlob.getBlobName();
-                String[] mergeParts = mergePath.split("/");
-                String mergeName = mergeParts[mergeParts.length - 1]; // 获取真正的文件名
-                if (ancestorName.equals(mergeName)) {
-                    blobExists = true;
-                    break;
+        if (ancestorBlobList != null) {
+            for (Blobs ancestorBlob : ancestorBlobList) {
+                String ancestorPath = ancestorBlob.getBlobName();
+                String[] ancestorParts = ancestorPath.split("/");
+                String ancestorName = ancestorParts[ancestorParts.length - 1]; // 获取真正的文件名
+                boolean blobExists = false;
+                for (Blobs mergeBlob : mergeBlobList) {
+                    String mergePath = ancestorBlob.getBlobName();
+                    String[] mergeParts = mergePath.split("/");
+                    String mergeName = mergeParts[mergeParts.length - 1]; // 获取真正的文件名
+                    if (ancestorName.equals(mergeName)) {
+                        blobExists = true;
+                        break;
+                    }
                 }
-            }
-            if (blobExists) {
-                deleteBlobs.add(ancestorBlob);
+                if (blobExists) {
+                    deleteBlobs.add(ancestorBlob);
+                }
             }
         }
         return deleteBlobs;
@@ -281,35 +338,37 @@ public class Merge {
             otherBlobName.add(otherBlob.getBlobName());
         }
 
-        for (Blobs ancestorBlob : ancestorBlobList) {
-            String ancestorName = ancestorBlob.getBlobName();
-            if (currentBlobName.contains(ancestorName) && !otherBlobName.contains(ancestorName)) {   //祖先commit原来有此文件，但是在other branch中被删除了
-                if (!currentBlobID.contains(ancestorBlob.getBlobID())) {
-                    //在master中发生改变
-                    for (Blobs currentBlob : currentBlobList) {
-                        String currentName = currentBlob.getBlobName();
-                        if (currentName.equals(ancestorName)) {
-                            byte[] newContent = resolveConflict(currentBlob, null);
-                            Blobs newBlob = new Blobs(ancestorName, newContent);
-                            mergeBlobList.add(newBlob);
-                            break;
+        if (ancestorBlobList != null) {
+            for (Blobs ancestorBlob : ancestorBlobList) {
+                String ancestorName = ancestorBlob.getBlobName();
+                if (currentBlobName.contains(ancestorName) && !otherBlobName.contains(ancestorName)) {   //祖先commit原来有此文件，但是在other branch中被删除了
+                    if (!currentBlobID.contains(ancestorBlob.getBlobID())) {
+                        //在master中发生改变
+                        for (Blobs currentBlob : currentBlobList) {
+                            String currentName = currentBlob.getBlobName();
+                            if (currentName.equals(ancestorName)) {
+                                byte[] newContent = resolveConflict(currentBlob, null);
+                                Blobs newBlob = new Blobs(ancestorName, newContent);
+                                mergeBlobList.add(newBlob);
+                                break;
+                            }
                         }
-                    }
 
-                }
-            } else if (!currentBlobName.contains(ancestorName) && otherBlobName.contains(ancestorName)) {  //祖先commit原来有此文件，master branch中被删除了
-                if (!otherBlobID.contains(ancestorBlob.getBlobID())) {
-                    //在other中发生改变
-                    for (Blobs otherBlob : otherBlobList) {
-                        String otherName = otherBlob.getBlobName();
-                        if (otherName.equals(ancestorName)) {
-                            byte[] newContent = resolveConflict(null, otherBlob);
-                            Blobs newBlob = new Blobs(ancestorName, newContent);
-                            mergeBlobList.add(newBlob);
-                            break;
+                    }
+                } else if (!currentBlobName.contains(ancestorName) && otherBlobName.contains(ancestorName)) {  //祖先commit原来有此文件，master branch中被删除了
+                    if (!otherBlobID.contains(ancestorBlob.getBlobID())) {
+                        //在other中发生改变
+                        for (Blobs otherBlob : otherBlobList) {
+                            String otherName = otherBlob.getBlobName();
+                            if (otherName.equals(ancestorName)) {
+                                byte[] newContent = resolveConflict(null, otherBlob);
+                                Blobs newBlob = new Blobs(ancestorName, newContent);
+                                mergeBlobList.add(newBlob);
+                                break;
+                            }
                         }
-                    }
 
+                    }
                 }
             }
         }

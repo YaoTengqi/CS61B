@@ -40,7 +40,7 @@ public class Commit implements Serializable {
         this.time = commitTime;
         this.blobArray = blobArray;
         this.parent = parent;
-        this.commitID = calculateID(parent);
+        this.commitID = calculateID();
         this.branch = branchName;
     }
 
@@ -64,10 +64,9 @@ public class Commit implements Serializable {
         return branch;
     }
 
-    private String calculateID(Commit parent) throws NoSuchAlgorithmException {
-        String parentCommitID = (parent != null) ? parent.getCommitID() : "";
+    private String calculateID() {
         String blobIDs = this.getBlobsID();
-        String commitInfo = parentCommitID + blobIDs + message + time;
+        String commitInfo = blobIDs + message + time;
         return Utils.sha1(commitInfo);
     }
 

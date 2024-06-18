@@ -20,11 +20,21 @@ public class Main {
     public static void main(String[] args) {
         File headCommit = new File(Repository.HEAD_AREA + "/head.bin");
         Commit currentCommit = null;
+        mergeCommit mergeCurrentCommit = null;
         List<String> stageFileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
         List<String> workStageFileNames = Utils.plainFilenamesIn(Repository.WORK_STAGE);
         List<String> removeFileNames = Utils.plainFilenamesIn(Repository.REMOVAL_AREA);
         if (headCommit.exists()) {
             currentCommit = Utils.readObject(headCommit, Commit.class);
+            if (currentCommit instanceof mergeCommit) {
+                mergeCurrentCommit = Utils.readObject(headCommit, mergeCommit.class);
+            } else {
+                try {
+                    mergeCurrentCommit = new mergeCommit(currentCommit.getBranch(), currentCommit.getMessage(), currentCommit.getTime(), currentCommit.getBlobArray(), currentCommit.getParent(), null);
+                } catch (NoSuchAlgorithmException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
         if (args.length == 0) {
             System.out.println("Please enter a command.");
@@ -108,6 +118,12 @@ public class Main {
                         }
                         boolean removalEqualWithCurrent = Commit.updateBlobArray(newCommit, previousBlobArray, removeFileNames, "REMOVAL_AREA");
                         boolean stageEqualWithCurrent = Commit.updateBlobArray(newCommit, newCommit.getBlobArray(), stageFileNames, "STAGE_AREA");
+                        // 更新blobArray后需要更新ID
+                        try {
+                            newCommit = new Commit(newCommit.getBranch(), newCommit.getMessage(), newCommit.getTime(), newCommit.getBlobArray(), newCommit.getParent());
+                        } catch (NoSuchAlgorithmException e) {
+                            throw new RuntimeException(e);
+                        }
                         if (!(stageEqualWithCurrent && removalEqualWithCurrent)) {
 //                            Commit newCommit = new Commit(secondArg, previousBlobArray, currentCommit);
                             try {
@@ -491,21 +507,31 @@ public class Main {
                             System.out.println("You have uncommitted changes.");
                         } else {
                             branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
-                            File branchFile = Checkout.findBranch(currentCommit, branchName, branchFileNames);
+                            File branchFile = Checkout.findBranch(mergeCurrentCommit, branchName, branchFileNames);
                             boolean isUntracked = false;
                             if (branchFile != null) {
                                 // 检查untracked file
                                 for (String workFile : workStageFileNames) {
                                     try {
-                                        isUntracked = Checkout.checkUntracked(currentCommit, workFile);
+                                        isUntracked = Checkout.checkUntracked(mergeCurrentCommit, workFile);
                                     } catch (IOException e) {
                                         throw new RuntimeException(e);
                                     }
                                 }
                                 if (!isUntracked) {
                                     Commit otherCommit = Utils.readObject(branchFile, Commit.class);
+                                    mergeCommit mergeOtherCommit = null;
+                                    if (otherCommit instanceof mergeCommit) {
+                                        mergeOtherCommit = Utils.readObject(branchFile, mergeCommit.class);
+                                    } else {
+                                        try {
+                                            mergeOtherCommit = new mergeCommit(otherCommit.getBranch(), otherCommit.getMessage(), otherCommit.getTime(), otherCommit.getBlobArray(), otherCommit.getParent(), null);
+                                        } catch (NoSuchAlgorithmException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    }
                                     // 1. 寻找祖先节点
-                                    Commit ancestor = Merge.findSplitAncestor(currentCommit, otherCommit);
+                                    Commit ancestor = Merge.findSplitAncestor(mergeCurrentCommit, mergeOtherCommit);
                                     // 2. 寻找同名文件
                                     Set<String> sameNameBlobName = Merge.findSameBlob(currentCommit, otherCommit);
                                     List<Blobs> mergeBlobList = null;
@@ -520,7 +546,7 @@ public class Main {
                                     }
                                     // 5. 准备mergeCommit的message
                                     String mergeMessage = "Merged " + otherCommit.getBranch() + " into " + currentCommit.getBranch() + ".";
-//                        Merged [given branch name] into [current branch name].
+                                    // Merged [given branch name] into [current branch name].
                                     dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z", Locale.ENGLISH);
                                     dateFormat.setTimeZone(TimeZone.getTimeZone("CST"));
                                     currentTime = new Date();
@@ -528,7 +554,7 @@ public class Main {
                                     mergeCommit newCommit = null;
                                     try {
                                         // 6. 写新的commit并更改头指针
-                                        newCommit = new mergeCommit(currentCommit.getBranch(), mergeMessage, formatDate, mergeBlobList, currentCommit.getParent(), otherCommit.getParent());
+                                        newCommit = new mergeCommit(currentCommit.getBranch(), mergeMessage, formatDate, mergeBlobList, currentCommit, otherCommit);
                                         newCommit.writeCommit(Repository.COMMIT_AREA, newCommit.getCommitID()); // 将commit写入COMMIT_AREA
                                         headCommit.delete();
                                         newCommit.writeCommit(Repository.HEAD_AREA, "head");// 头指针指向最新的commit

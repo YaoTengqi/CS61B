@@ -11,4 +11,11 @@ public class mergeCommit extends Commit {
         this.secondParent = secondParent;
     }
 
+    public Commit getSecondParent() {
+        return secondParent;
+    }
+
+    public void setSecondParent(Commit secondParent) {
+        this.secondParent = secondParent;
+    }
 }
