@@ -24,6 +24,8 @@ public class Main {
         List<String> stageFileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
         List<String> workStageFileNames = Utils.plainFilenamesIn(Repository.WORK_STAGE);
         List<String> removeFileNames = Utils.plainFilenamesIn(Repository.REMOVAL_AREA);
+        boolean isUntracked = false;
+        boolean fileExists = false;
         if (headCommit.exists()) {
             currentCommit = Utils.readObject(headCommit, Commit.class);
             if (currentCommit instanceof mergeCommit) {
@@ -340,8 +342,7 @@ public class Main {
                             if (currentCommit.getBranch().equals(secondArg)) {
                                 System.out.println("No need to checkout the current branch.");
                             } else {
-                                boolean isUntracked = false;
-                                boolean fileExists = false;
+
                                 // 3.1 检查untracked file
                                 for (String workFile : workStageFileNames) {
                                     try {
@@ -479,7 +480,19 @@ public class Main {
                     } else {
                         String commitID = args[1];
                         try {
-                            currentCommit = Checkout.resetCommitFile(currentCommit, commitID);
+                            // 检查untracked file
+                            for (String workFile : workStageFileNames) {
+                                try {
+                                    isUntracked = Checkout.checkUntracked(mergeCurrentCommit, workFile);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                            if (!isUntracked) {
+                                currentCommit = Checkout.resetCommitFile(currentCommit, commitID);
+                            } else {
+                                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                            }
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -508,7 +521,7 @@ public class Main {
                         } else {
                             branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
                             File branchFile = Checkout.findBranch(mergeCurrentCommit, branchName, branchFileNames);
-                            boolean isUntracked = false;
+
                             if (branchFile != null) {
                                 // 检查untracked file
                                 for (String workFile : workStageFileNames) {

@@ -35,6 +35,7 @@ public class Commit implements Serializable {
     private List<Blobs> blobArray;  //本次提交所包含的blob，存储在此队列中
     private Commit parent;      //本次提交的父亲commit
 
+
     public Commit(String branchName, String message, String commitTime, List<Blobs> blobArray, Commit parent) throws NoSuchAlgorithmException {
         this.message = message;
         this.time = commitTime;

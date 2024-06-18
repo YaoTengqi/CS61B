@@ -8,6 +8,8 @@ import java.util.List;
 
 
 public class Checkout {
+    static boolean commitExistsLock = false;
+
     /**
      * 检查fileName是否为未被追踪的文件
      *
@@ -110,8 +112,9 @@ public class Checkout {
                 break;
             }
         }
-        if (!commitExists) {
+        if (!commitExists && !commitExistsLock) {
             System.out.println("No commit with that id exists.");
+            commitExistsLock = true;
         }
         if (!fileExists) {
             File workFile = new File(Repository.WORK_STAGE + fileName);
