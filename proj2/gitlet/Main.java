@@ -239,11 +239,7 @@ public class Main {
                         System.out.println();
                     }
                     //打印initial commit
-                    System.out.println("===");
-                    System.out.println("commit " + "d87aa6d88d9b64a08e646e9763ca97e9d2728ef2");
-                    System.out.println("Date: " + "Wed Dec 31 18:00:00 1969 -0600");
-                    System.out.println("initial commit");
-                    System.out.println();
+                    printInitialCommit();
                     break;
                 case "find":
                     //要从全部的commit中寻找，不能从头结点开始找
@@ -494,6 +490,10 @@ public class Main {
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
+                        stageFileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
+                        removeFileNames = Utils.plainFilenamesIn(Repository.REMOVAL_AREA);
+                        Commit.clearStageArea(stageFileNames, Repository.STAGE_AREA);
+                        Commit.clearStageArea(removeFileNames, Repository.REMOVAL_AREA);
                     }
                     break;
                 case "merge":
@@ -594,4 +594,15 @@ public class Main {
             }
         }
     }
+
+    public static void printInitialCommit() {
+        //打印initial commit
+        System.out.println("===");
+        System.out.println("commit " + "d87aa6d88d9b64a08e646e9763ca97e9d2728ef2");
+        System.out.println("Date: " + "Wed Dec 31 18:00:00 1969 -0600");
+        System.out.println("initial commit");
+        System.out.println();
+    }
 }
+
+

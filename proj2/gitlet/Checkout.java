@@ -80,7 +80,16 @@ public class Checkout {
      */
     public static Commit checkoutCommitFile(Commit currentCommit, String fileName, String commitID, boolean resetFlag) throws IOException {
         // 2. java gitlet.Main checkout [commit id] -- [file name]
-        List<Commit> commitList = Commit.returnCommitList(currentCommit);
+        // 需要从全部的commit中寻找，不能从当前commit中找
+//        List<Commit> commitList = Commit.returnCommitList(currentCommit);
+        List<String> commitNames = Utils.plainFilenamesIn(Repository.COMMIT_AREA);
+        List<Commit> commitList = new ArrayList<>();
+        for (String commitName : commitNames) {
+            File commitFile = new File(String.valueOf(Utils.join(Repository.COMMIT_AREA, commitName)));
+            Commit newCommit = Utils.readObject(commitFile, Commit.class);
+            commitList.add(newCommit);
+        }
+
         boolean commitExists = false;
         boolean fileExists = false;
         for (int i = 0; i < commitList.size(); i++) {
