@@ -480,33 +480,34 @@ public class Main {
                     } else {
                         String commitID = args[1];
                         try {
-                            // 检查untracked file
-                            for (String workFile : workStageFileNames) {
-                                try {
-                                    isUntracked = Checkout.checkUntracked(mergeCurrentCommit, workFile);
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            }
-                            if (!isUntracked) {
-                                currentCommit = Checkout.resetCommitFile(currentCommit, commitID);
-                            } else {
-                                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
-                            }
+                            currentCommit = Checkout.resetCommitFile(currentCommit, commitID);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
-                        //切换头指针
-                        headCommit.delete();
-                        try {
-                            currentCommit.writeCommit(Repository.HEAD_AREA, "head");
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
+                        // 检查untracked file
+                        for (String workFile : workStageFileNames) {
+                            try {
+                                isUntracked = Checkout.checkUntracked(mergeCurrentCommit, workFile);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
                         }
-                        stageFileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
-                        removeFileNames = Utils.plainFilenamesIn(Repository.REMOVAL_AREA);
-                        Commit.clearStageArea(stageFileNames, Repository.STAGE_AREA);
-                        Commit.clearStageArea(removeFileNames, Repository.REMOVAL_AREA);
+                        if (!isUntracked) {
+                            //切换头指针
+                            headCommit.delete();
+                            try {
+                                currentCommit.writeCommit(Repository.HEAD_AREA, "head");
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                            stageFileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
+                            removeFileNames = Utils.plainFilenamesIn(Repository.REMOVAL_AREA);
+                            Commit.clearStageArea(stageFileNames, Repository.STAGE_AREA);
+                            Commit.clearStageArea(removeFileNames, Repository.REMOVAL_AREA);
+                        } else {
+                            System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                        }
+
                     }
                     break;
                 case "merge":
