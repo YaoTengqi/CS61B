@@ -158,7 +158,8 @@ public class Commit implements Serializable {
                                 equalWithCurrent = false;
                             }
                             if (command.equals("REMOVAL_AREA")) { //当操作删除区removal_area时，将该文件从blobArray中删除
-                                tempBlobArray.remove(i);
+                                int removeIndex = i - (previousBlobArray.size() - tempBlobArray.size()); // 计算相对索引
+                                tempBlobArray.remove(removeIndex);
                                 equalWithCurrent = false;
                             }
                             equalName = equalName + 1;
