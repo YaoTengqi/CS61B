@@ -322,8 +322,6 @@ public class Main {
                                 }
                             } else if (modifyFlag == 0) {
                                 untrackedFileNames.add(workStageFile);
-                            } else {
-                                System.out.println(workStageFile + "(deleted)");
                             }
                         } else if (modifyFlag == 1) {
                             System.out.println(workStageFile + "(modified)");
