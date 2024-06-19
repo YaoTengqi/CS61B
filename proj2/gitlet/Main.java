@@ -318,13 +318,15 @@ public class Main {
                             if (workStageBin.exists()) {
                                 Blobs stageBlob = Utils.readObject(workStageBin, Blobs.class);
                                 if (!stageBlob.getBlobID().equals(blob.getBlobID())) {
-                                    System.out.println(workStageFile);
+                                    System.out.println(workStageFile + "(modified)");
                                 }
                             } else if (modifyFlag == 0) {
                                 untrackedFileNames.add(workStageFile);
+                            } else {
+                                System.out.println(workStageFile + "(deleted)");
                             }
                         } else if (modifyFlag == 1) {
-                            System.out.println(workStageFile);
+                            System.out.println(workStageFile + "(modified)");
                         }
                     }
                     System.out.println();
@@ -601,10 +603,11 @@ public class Main {
                                             for (Blobs mergeBlob : mergeBlobList) {
                                                 String mergeName = mergeBlob.getBlobName();
                                                 File addFile = new File(mergeName);
-                                                if (!addFile.exists()) {
-                                                    String content = new String(mergeBlob.getContent());
-                                                    Utils.writeContents(addFile, content);
+                                                if (addFile.exists()) {
+                                                    addFile.delete();
                                                 }
+                                                String content = new String(mergeBlob.getContent());
+                                                Utils.writeContents(addFile, content);
                                             }
                                         }
                                         // 10. 清空缓存区
