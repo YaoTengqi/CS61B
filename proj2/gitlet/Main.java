@@ -544,58 +544,74 @@ public class Main {
                                             throw new RuntimeException(e);
                                         }
                                     }
-                                    // 1. 寻找祖先节点
-                                    Commit ancestor = Merge.findSplitAncestor(mergeCurrentCommit, mergeOtherCommit);
-                                    // 2. 寻找同名文件
-                                    Set<String> sameNameBlobName = Merge.findSameBlob(currentCommit, otherCommit);
                                     List<Blobs> mergeBlobList = null;
                                     List<Blobs> deleteBlobList = null;
-                                    try {
-                                        // 3. 算出合并后的blobList
-                                        mergeBlobList = Merge.sameBlobListTraversal(sameNameBlobName, ancestor, currentCommit, otherCommit);
-                                        // 4. 算出要删除的blobList
-                                        deleteBlobList = Merge.findDeleteBlobs(ancestor, mergeBlobList);
-                                    } catch (IOException e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                    // 5. 准备mergeCommit的message
                                     String mergeMessage = "Merged " + otherCommit.getBranch() + " into " + currentCommit.getBranch() + ".";
-                                    // Merged [given branch name] into [current branch name].
                                     dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z", Locale.ENGLISH);
                                     dateFormat.setTimeZone(TimeZone.getTimeZone("CST"));
                                     currentTime = new Date();
                                     String formatDate = dateFormat.format(currentTime);
                                     mergeCommit newCommit = null;
-                                    try {
-                                        // 6. 写新的commit并更改头指针
-                                        newCommit = new mergeCommit(currentCommit.getBranch(), mergeMessage, formatDate, mergeBlobList, currentCommit, otherCommit);
-                                        newCommit.writeCommit(Repository.COMMIT_AREA, newCommit.getCommitID()); // 将commit写入COMMIT_AREA
-                                        headCommit.delete();
-                                        newCommit.writeCommit(Repository.HEAD_AREA, "head");// 头指针指向最新的commit
-                                    } catch (NoSuchAlgorithmException e) {
-                                        throw new RuntimeException(e);
-                                    } catch (IOException e) {
-                                        throw new RuntimeException(e);
-                                    }
-
-                                    // 7. 在工作区删除deleteBlobsList中的文件
-                                    for (Blobs deleteBlob : deleteBlobList) {
-                                        String deleteName = deleteBlob.getBlobName();
-                                        File deleteFile = new File(deleteName);
-                                        deleteFile.delete();
-                                    }
-                                    // 8. 在工作区添加mergeList中的文件
-                                    for (Blobs mergeBlob : mergeBlobList) {
-                                        String mergeName = mergeBlob.getBlobName();
-                                        File addFile = new File(mergeName);
-                                        if (!addFile.exists()) {
-                                            String content = new String(mergeBlob.getContent());
-                                            Utils.writeContents(addFile, content);
+                                    boolean ancestorOfCurrent = false;
+                                    // 1. 寻找祖先节点
+                                    Commit ancestor = Merge.findSplitAncestor(mergeCurrentCommit, mergeOtherCommit);
+                                    // 2. 判断特殊情况
+                                    if (ancestor.getCommitID().equals(mergeOtherCommit.getCommitID())) {
+                                        System.out.println("Given branch is an ancestor of the current branch.");
+                                        ancestorOfCurrent = true;
+                                    } else {
+                                        // 3. 寻找同名文件
+                                        Set<String> sameNameBlobName = Merge.findSameBlob(currentCommit, otherCommit);
+                                        try {
+                                            // 4. 算出合并后的blobList
+                                            mergeBlobList = Merge.sameBlobListTraversal(sameNameBlobName, ancestor, currentCommit, otherCommit);
+                                            // 5. 算出要删除的blobList
+                                            deleteBlobList = Merge.findDeleteBlobs(ancestor, mergeBlobList);
+                                        } catch (IOException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                        // Merged [given branch name] into [current branch name].
+                                        try {
+                                            newCommit = new mergeCommit(currentCommit.getBranch(), mergeMessage, formatDate, mergeBlobList, currentCommit, otherCommit);
+                                        } catch (NoSuchAlgorithmException e) {
+                                            throw new RuntimeException(e);
                                         }
                                     }
-                                    // 9. 清空缓存区
-                                    Commit.clearStageArea(stageFileNames, Repository.STAGE_AREA);
-                                    Commit.clearStageArea(removeFileNames, Repository.REMOVAL_AREA);
+                                    if (!ancestorOfCurrent) {
+                                        // 7. 写新的commit并更改头指针
+                                        try {
+                                            newCommit.writeCommit(Repository.COMMIT_AREA, newCommit.getCommitID()); // 将commit写入COMMIT_AREA
+                                            headCommit.delete();
+                                            newCommit.writeCommit(Repository.HEAD_AREA, "head");// 头指针指向最新的commit
+                                        } catch (IOException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                        // 8. 在工作区删除deleteBlobsList中的文件
+                                        if (deleteBlobList != null) {
+                                            for (Blobs deleteBlob : deleteBlobList) {
+                                                String deleteName = deleteBlob.getBlobName();
+                                                File deleteFile = new File(deleteName);
+                                                deleteFile.delete();
+                                            }
+                                        }
+                                        // 9. 在工作区添加mergeList中的文件
+                                        if (mergeBlobList != null) {
+                                            for (Blobs mergeBlob : mergeBlobList) {
+                                                String mergeName = mergeBlob.getBlobName();
+                                                File addFile = new File(mergeName);
+                                                if (!addFile.exists()) {
+                                                    String content = new String(mergeBlob.getContent());
+                                                    Utils.writeContents(addFile, content);
+                                                }
+                                            }
+                                        }
+                                        // 10. 清空缓存区
+                                        Commit.clearStageArea(stageFileNames, Repository.STAGE_AREA);
+                                        Commit.clearStageArea(removeFileNames, Repository.REMOVAL_AREA);
+                                        if (ancestor.getCommitID().equals(mergeCurrentCommit.getCommitID())) {
+                                            System.out.println("Current branch fast-forwarded.");
+                                        }
+                                    }
                                 } else {
                                     System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
                                 }
