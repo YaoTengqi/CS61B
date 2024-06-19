@@ -262,7 +262,7 @@ public class Merge {
         }
         String headString = "<<<<<<< HEAD\n";
         String divideLine = "\n=======";
-        String endLine = ">>>>>>>\n";
+        String endLine = ">>>>>>>";
         String fileContent = headString + new String(currentContent) + divideLine + "\n" + new String(otherContent) + endLine;
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
 //        bos.write(headString.getBytes());
