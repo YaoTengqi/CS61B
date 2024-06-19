@@ -40,6 +40,8 @@ public class Main {
         }
         if (args.length == 0) {
             System.out.println("Please enter a command.");
+        } else if (!headCommit.exists()) {
+            System.out.println("Not in an initialized Gitlet directory.");
         } else {
             String firstArg = args[0];
             switch (firstArg) {
