@@ -1,6 +1,10 @@
 # Gitlet
 本项目是编写一个简易版git
 
+**done**
+
+![done.pic](source/done.png)
+
 ## Classes and Data Structures
 ### Main
 Main文件是整个项目的入口，他根据输入的args[]参数识别命令并执行。
