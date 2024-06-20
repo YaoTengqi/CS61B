@@ -144,17 +144,16 @@ public class Checkout {
      *
      * @param currentCommit
      * @param branchName
-     * @param branchFileNames
-     * @return
+     * @return branchFile
      */
-    public static File findBranch(Commit currentCommit, String branchName, List<String> branchFileNames) {
+    public static File findBranch(Commit currentCommit, String branchName) {
         boolean branchExist = false;
         File branchFile = null;
         if (currentCommit.getBranch().equals(branchName)) {
             System.out.println("Cannot remove the current branch.");
             return null;
         }
-        branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
+        List<String> branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
         for (String branchFileName : branchFileNames) {
             if (branchFileName.equals(branchName + ".bin")) {
                 branchFile = new File(Repository.HEAD_AREA + "/" + branchName + ".bin");

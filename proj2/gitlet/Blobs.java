@@ -85,6 +85,13 @@ public class Blobs implements Serializable {
         return returnFlag;
     }
 
+    /**
+     * command add使用的具体函数，完成具体文件的添加
+     *
+     * @param currentCommit
+     * @param blobFileName
+     * @throws IOException
+     */
     public static void addBlobs(Commit currentCommit, String blobFileName) throws IOException {
         List<Blobs> previousBlobList = currentCommit.getBlobArray();
         Blobs currentBlob = new Blobs(blobFileName);
@@ -95,10 +102,7 @@ public class Blobs implements Serializable {
             //当文件并未与上一个commit有区别时，判断该文件是否存在于REMOVAL_STAGE中
             boolean removeFlag = false;
             List<String> removeFileNames = Utils.plainFilenamesIn(Repository.REMOVAL_AREA);
-            String[] parts = blobFileName.split("/");
-            String realFileName = parts[parts.length - 1]; // 获取真正的文件名
-            int lastIndex = realFileName.lastIndexOf('.');
-            String fileNameWithoutExtension = realFileName.substring(0, lastIndex);
+            String fileNameWithoutExtension = Main.getNoExtensionName(blobFileName);
             String binFileName = fileNameWithoutExtension + ".bin";
             //如果在REMOVAL_STAGE中出现同名文件，则将其从REMOVAL_AREA中删除并添加到STAGE_AREA中
             for (String removeFileName : removeFileNames) {
@@ -115,6 +119,13 @@ public class Blobs implements Serializable {
     }
 
 
+    /**
+     * 返回所有Blobs
+     *
+     * @param fileNames
+     * @param workStage
+     * @return
+     */
     public static List<Blobs> returnBlobsList(List<String> fileNames, File workStage) {
         List<Blobs> blobsList = new ArrayList<Blobs>();
         for (int i = 0; i < fileNames.size(); i++) {
@@ -139,10 +150,6 @@ public class Blobs implements Serializable {
         boolean returnFlag = false;
         List<Blobs> blobsList = new ArrayList<>();
         String fileNameWithoutExtension = Main.getNoExtensionName(fileName);
-//        String[] parts = fileName.split("/");
-//        String realFileName = parts[parts.length - 1]; // 获取真正的文件名
-//        int lastIndex = realFileName.lastIndexOf('.');
-//        String fileNameWithoutExtension = realFileName.substring(0, lastIndex);
         File createFile = new File(Repository.STAGE_AREA + "/" + fileNameWithoutExtension + ".bin");
 //        File workStageFile = new File(Repository.CWD + fileName);
 //        Blobs blobFile = new Blobs(Repository.CWD + fileName);

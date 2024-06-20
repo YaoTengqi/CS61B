@@ -474,8 +474,7 @@ public class Main {
                         throw new GitletException("Please enter branch's name.");
                     } else {
                         String branchName = args[1];
-                        branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
-                        File branchFile = Checkout.findBranch(currentCommit, branchName, branchFileNames);
+                        File branchFile = Checkout.findBranch(currentCommit, branchName);
                         if (branchFile != null && branchFile.exists()) {
                             branchFile.delete();
                         }
@@ -529,8 +528,7 @@ public class Main {
                         } else if (stageFileNames.size() != 0) {
                             System.out.println("You have uncommitted changes.");
                         } else {
-                            branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
-                            File branchFile = Checkout.findBranch(mergeCurrentCommit, branchName, branchFileNames);
+                            File branchFile = Checkout.findBranch(mergeCurrentCommit, branchName);
 
                             if (branchFile != null) {
                                 // 检查untracked file
