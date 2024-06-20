@@ -159,10 +159,7 @@ public class Main {
                         secondArg = args[1];
                         List<String> fileNames = Utils.plainFilenamesIn(Repository.STAGE_AREA);
                         List<Blobs> stageBlobsList = Blobs.returnBlobsList(fileNames, Repository.STAGE_AREA);
-                        String[] parts = secondArg.split("/");
-                        String realFileName = parts[parts.length - 1]; // 获取真正的文件名
-                        int lastIndex = realFileName.lastIndexOf('.');
-                        String fileNameWithoutExtension = realFileName.substring(0, lastIndex);
+                        String fileNameWithoutExtension = getNoExtensionName(secondArg);
                         File stageRemoveFile = Utils.join(Repository.STAGE_AREA, fileNameWithoutExtension + ".bin");
                         File removeFile = Utils.join(Repository.REMOVAL_AREA, fileNameWithoutExtension + ".bin");
                         // 如果STAGE_AREA中有对应的文件则将其删去
@@ -229,16 +226,6 @@ public class Main {
                         System.out.println("commit " + globalLogCommit.getCommitID());
                         System.out.println("Date: " + globalLogCommit.getTime());
                         System.out.println(globalLogCommit.getMessage());
-                        /**
-                         *  输出每个commit的全部Blobs信息
-                         *
-                         List<Blobs> previousBlobArray = globalLogCommit.getBlobArray();
-                         if (previousBlobArray != null) {
-                         for (Blobs blob : previousBlobArray) {
-                         System.out.println("Blobs: " + blob.getBlobID() + " " + blob.getBlobName());
-                         }
-                         }
-                         */
                         System.out.println();
                     }
                     //打印initial commit
@@ -292,8 +279,7 @@ public class Main {
                     for (String stageFileName : stageFileNames) {
                         File stageFile = new File(String.valueOf(Utils.join(Repository.STAGE_AREA, stageFileName)));
                         Blobs blob = Utils.readObject(stageFile, Blobs.class);
-                        String[] parts = blob.getBlobName().split("/");
-                        String realFileName = parts[parts.length - 1]; // 获取真正的文件名
+                        String realFileName = getRealName(blob.getBlobName());
                         System.out.println(realFileName);
                     }
                     System.out.println();
@@ -301,8 +287,7 @@ public class Main {
                     for (String removeFileName : removeFileNames) {
                         File removeFile = new File(String.valueOf(Utils.join(Repository.REMOVAL_AREA, removeFileName)));
                         Blobs blob = Utils.readObject(removeFile, Blobs.class);
-                        String[] parts = blob.getBlobName().split("/");
-                        String realFileName = parts[parts.length - 1]; // 获取真正的文件名
+                        String realFileName = getRealName(blob.getBlobName());
                         System.out.println(realFileName);
                         removeFiles.add(realFileName);
                     }
@@ -336,8 +321,7 @@ public class Main {
                         for (Blobs blobs : currentBlobs) {
                             boolean fileExist = false;
                             String blobName = blobs.getBlobName();
-                            String[] parts = blobName.split("/");
-                            String realFileName = parts[parts.length - 1]; // 获取真正的文件名
+                            String realFileName = getRealName(blobName);
                             for (String workStageFile : workStageFileNames) {
                                 if (realFileName.equals(workStageFile)) {
                                     fileExist = true;
@@ -426,8 +410,7 @@ public class Main {
                                         if (currentBlobList != null) {
                                             for (Blobs currentBlob : currentBlobList) {
                                                 String currentName = currentBlob.getBlobName();
-                                                String[] parts = currentName.split("/");
-                                                String realFileName = parts[parts.length - 1]; // 获取真正的文件名
+                                                String realFileName = getRealName(currentName);
                                                 if (!workStageFileNames.contains(realFileName)) {
                                                     try {
                                                         Checkout.checkoutFile(currentCommit, realFileName, true);
@@ -622,17 +605,6 @@ public class Main {
                                         }
                                         // 9. 在工作区添加mergeList中的文件
                                         coverWorkStageFile(mergeBlobList);
-//                                        if (mergeBlobList != null) {
-//                                            for (Blobs mergeBlob : mergeBlobList) {
-//                                                String mergeName = mergeBlob.getBlobName();
-//                                                File addFile = new File(mergeName);
-//                                                if (addFile.exists()) {
-//                                                    addFile.delete();
-//                                                }
-//                                                String content = new String(mergeBlob.getContent());
-//                                                Utils.writeContents(addFile, content);
-//                                            }
-//                                        }
                                         // 10. 清空缓存区
                                         Commit.clearStageArea(stageFileNames, Repository.STAGE_AREA);
                                         Commit.clearStageArea(removeFileNames, Repository.REMOVAL_AREA);
@@ -677,6 +649,25 @@ public class Main {
                 Utils.writeContents(addFile, content);
             }
         }
+    }
+
+    /**
+     * 返回真正的文件名(去除绝对路径)
+     *
+     * @param path
+     * @return
+     */
+    public static String getRealName(String path) {
+        String[] parts = path.split("/");
+        String realFileName = parts[parts.length - 1]; // 获取真正的文件名
+        return realFileName;
+    }
+
+    public static String getNoExtensionName(String path) {
+        String realFileName = getRealName(path);
+        int lastIndex = realFileName.lastIndexOf('.');
+        String fileNameWithoutExtension = realFileName.substring(0, lastIndex);
+        return fileNameWithoutExtension;
     }
 
 }

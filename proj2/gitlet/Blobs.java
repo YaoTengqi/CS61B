@@ -4,7 +4,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
  * The saved contents of files.
  * Since Gitlet saves many versions of files,
@@ -110,21 +109,8 @@ public class Blobs implements Serializable {
                     File removeRealFile = new File(String.valueOf(Utils.join(Repository.REMOVAL_AREA, binFileName)));
                     //从REMOVAL_AREA中删除
                     removeRealFile.delete();
-                    /**     添加到STAGE_AREA
-                     List<Blobs> removeBlobs = Blobs.returnBlobsList(removeFile, Repository.REMOVAL_AREA);
-                     Blobs removeBlob = removeBlobs.get(0);//一共只有一个Blob
-                     //                    添加到STAGE_AREA中
-                     File stageRealFile = new File(String.valueOf(Utils.join(Repository.STAGE_AREA, binFileName)));
-                     Utils.writeObject(stageRealFile, removeBlob);
-                     */
                 }
             }
-
-            /**     若果与上一个commit中的文件相比并未发生改变则输出提示信息
-             if (!removeFlag) {
-             System.out.println("This file is tracked and not changed.");
-             }
-             */
         }
     }
 
@@ -152,10 +138,11 @@ public class Blobs implements Serializable {
     public static boolean deleteStageFile(String fileName, String command, Blobs blobFile) throws IOException {
         boolean returnFlag = false;
         List<Blobs> blobsList = new ArrayList<>();
-        String[] parts = fileName.split("/");
-        String realFileName = parts[parts.length - 1]; // 获取真正的文件名
-        int lastIndex = realFileName.lastIndexOf('.');
-        String fileNameWithoutExtension = realFileName.substring(0, lastIndex);
+        String fileNameWithoutExtension = Main.getNoExtensionName(fileName);
+//        String[] parts = fileName.split("/");
+//        String realFileName = parts[parts.length - 1]; // 获取真正的文件名
+//        int lastIndex = realFileName.lastIndexOf('.');
+//        String fileNameWithoutExtension = realFileName.substring(0, lastIndex);
         File createFile = new File(Repository.STAGE_AREA + "/" + fileNameWithoutExtension + ".bin");
 //        File workStageFile = new File(Repository.CWD + fileName);
 //        Blobs blobFile = new Blobs(Repository.CWD + fileName);
@@ -181,5 +168,4 @@ public class Blobs implements Serializable {
         }
         return returnFlag;
     }
-
 }
