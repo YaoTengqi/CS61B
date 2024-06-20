@@ -198,7 +198,6 @@ public class Main {
                             if (!existInStage) {
                                 System.out.println("No reason to remove the file.");
                             }
-                            // 不存在于上一次commit不存在于当前STAGE_STAGE
                         } else if (rmFlag == 1 || rmFlag == 2) {
                             Utils.writeObject(removeFile, removeBlob);
                             File thisFile = Utils.join(Repository.WORK_STAGE, secondArg);
@@ -277,6 +276,7 @@ public class Main {
                 case "status":
                     List<String> branchFileNames = Utils.plainFilenamesIn(Repository.HEAD_AREA);
                     List<String> untrackedFileNames = new ArrayList<>();
+                    Set<String> removeFiles = new HashSet<>();
                     System.out.println("=== Branches ===");
                     System.out.println("*" + currentCommit.getBranch());    //首先输出当前commit的名称，并带上*作为标识
                     for (String branchFileName : branchFileNames) {
@@ -304,6 +304,7 @@ public class Main {
                         String[] parts = blob.getBlobName().split("/");
                         String realFileName = parts[parts.length - 1]; // 获取真正的文件名
                         System.out.println(realFileName);
+                        removeFiles.add(realFileName);
                     }
                     System.out.println();
                     System.out.println("=== Modifications Not Staged For Commit ===");
@@ -330,6 +331,7 @@ public class Main {
                     }
                     //查看被删除的文件(currentCommit的blobArray中有但workStage中没有的)
                     List<Blobs> currentBlobs = currentCommit.getBlobArray();
+                    workStageFileNames = Utils.plainFilenamesIn(Repository.WORK_STAGE);
                     if (currentBlobs != null) {
                         for (Blobs blobs : currentBlobs) {
                             boolean fileExist = false;
@@ -342,7 +344,7 @@ public class Main {
                                     break;
                                 }
                             }
-                            if (!fileExist) {
+                            if (!fileExist && !removeFiles.contains(realFileName)) {
                                 System.out.println(realFileName + "(deleted)");
                             }
                         }
@@ -529,7 +531,9 @@ public class Main {
                         } else {
                             System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
                         }
-
+                        // 覆盖当前工作区的文件
+                        List<Blobs> coverBlobs = currentCommit.getBlobArray();
+                        coverWorkStageFile(coverBlobs);
                     }
                     break;
                 case "merge":
@@ -617,17 +621,18 @@ public class Main {
                                             }
                                         }
                                         // 9. 在工作区添加mergeList中的文件
-                                        if (mergeBlobList != null) {
-                                            for (Blobs mergeBlob : mergeBlobList) {
-                                                String mergeName = mergeBlob.getBlobName();
-                                                File addFile = new File(mergeName);
-                                                if (addFile.exists()) {
-                                                    addFile.delete();
-                                                }
-                                                String content = new String(mergeBlob.getContent());
-                                                Utils.writeContents(addFile, content);
-                                            }
-                                        }
+                                        coverWorkStageFile(mergeBlobList);
+//                                        if (mergeBlobList != null) {
+//                                            for (Blobs mergeBlob : mergeBlobList) {
+//                                                String mergeName = mergeBlob.getBlobName();
+//                                                File addFile = new File(mergeName);
+//                                                if (addFile.exists()) {
+//                                                    addFile.delete();
+//                                                }
+//                                                String content = new String(mergeBlob.getContent());
+//                                                Utils.writeContents(addFile, content);
+//                                            }
+//                                        }
                                         // 10. 清空缓存区
                                         Commit.clearStageArea(stageFileNames, Repository.STAGE_AREA);
                                         Commit.clearStageArea(removeFileNames, Repository.REMOVAL_AREA);
@@ -656,6 +661,24 @@ public class Main {
         System.out.println("initial commit");
         System.out.println();
     }
+
+    /**
+     * reset或者merge时将新的file覆盖当前workStage的同名File
+     */
+    public static void coverWorkStageFile(List<Blobs> coverBlobs) {
+        if (coverBlobs != null) {
+            for (Blobs coverBlob : coverBlobs) {
+                String resetName = coverBlob.getBlobName();
+                File addFile = new File(resetName);
+                if (addFile.exists()) {
+                    addFile.delete();
+                }
+                String content = new String(coverBlob.getContent());
+                Utils.writeContents(addFile, content);
+            }
+        }
+    }
+
 }
 
 
