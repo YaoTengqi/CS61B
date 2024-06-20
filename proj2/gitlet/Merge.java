@@ -265,11 +265,6 @@ public class Merge {
         String endLine = ">>>>>>>\n";
         String fileContent = headString + new String(currentContent) + divideLine + new String(otherContent) + endLine;
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-//        bos.write(headString.getBytes());
-//        bos.write(currentContent);
-//        bos.write(divideLine.getBytes());
-//        bos.write(otherContent);
-//        bos.write(endLine.getBytes());
         bos.write(fileContent.getBytes());
         byte[] newContent = bos.toByteArray();
         if (!printConflict) {

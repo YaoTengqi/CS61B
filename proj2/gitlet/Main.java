@@ -307,6 +307,7 @@ public class Main {
                     }
                     System.out.println();
                     System.out.println("=== Modifications Not Staged For Commit ===");
+                    // 查看发生改变(modified)的文件
                     for (String workStageFile : workStageFileNames) {
                         String fileName = String.valueOf(Utils.join(Repository.WORK_STAGE, workStageFile));
                         Blobs blob = new Blobs(fileName);
@@ -325,6 +326,25 @@ public class Main {
                             }
                         } else if (modifyFlag == 1) {
                             System.out.println(workStageFile + "(modified)");
+                        }
+                    }
+                    //查看被删除的文件(currentCommit的blobArray中有但workStage中没有的)
+                    List<Blobs> currentBlobs = currentCommit.getBlobArray();
+                    if (currentBlobs != null) {
+                        for (Blobs blobs : currentBlobs) {
+                            boolean fileExist = false;
+                            String blobName = blobs.getBlobName();
+                            String[] parts = blobName.split("/");
+                            String realFileName = parts[parts.length - 1]; // 获取真正的文件名
+                            for (String workStageFile : workStageFileNames) {
+                                if (realFileName.equals(workStageFile)) {
+                                    fileExist = true;
+                                    break;
+                                }
+                            }
+                            if (!fileExist) {
+                                System.out.println(realFileName + "(deleted)");
+                            }
                         }
                     }
                     System.out.println();
