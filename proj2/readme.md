@@ -136,71 +136,44 @@ Repository负责对文件夹进行操作
 ## Persistence
 
 .
-├── gitlet
-│   ├── Blobs.class
-│   ├── Blobs.java
-│   ├── Checkout.class
-│   ├── Checkout.java
-│   ├── Commit.class
-│   ├── Commit.java
-│   ├── Dumpable.class
-│   ├── Dumpable.java
-│   ├── DumpObj.class
-│   ├── DumpObj.java
-│   ├── GitletException.class
-│   ├── GitletException.java
-│   ├── Main.class
-│   ├── Main.java
-│   ├── Makefile
-│   ├── Repository.class
-│   ├── Repository.java
-│   ├── sentinel
-│   ├── test.txt
-│   ├── Utils$1.class
-│   ├── Utils.class
-│   └── Utils.java
-├── gitlet-design.md
+├── Blobs.class
+├── Blobs.java
+├── Checkout.class
+├── Checkout.java
+├── Commit.class
+├── Commit.java
+├── Dumpable.class
+├── Dumpable.java
+├── DumpObj.class
+├── DumpObj.java
+├── GitletException.class
+├── GitletException.java
+├── Main.class
+├── Main.java
 ├── Makefile
-├── myTest
-│   ├── dangerous.txt
-│   ├── lxx.txt
-│   └── other.txt
-├── pom.xml
-├── readme.md
-├── target
-│   ├── classes
-│   │   └── gitlet
-│   │       ├── Blobs.class
-│   │       ├── Checkout.class
-│   │       ├── Commit.class
-│   │       ├── Dumpable.class
-│   │       ├── DumpObj.class
-│   │       ├── GitletException.class
-│   │       ├── Main.class
-│   │       ├── Repository.class
-│   │       ├── Utils$1.class
-│   │       └── Utils.class
-│   └── generated-sources
-│       └── annotations
-└── testing
-    ├── Makefile
-    ├── runner.py
-    ├── samples
-    │   ├── definitions.inc
-    │   ├── test01-init.in
-    │   ├── test02-basic-checkout.in
-    │   ├── test03-basic-log.in
-    │   └── test04-prev-checkout.in
-    ├── src
-    │   ├── notwug.txt
-    │   └── wug.txt
-    ├── staff-runner.py
-    ├── student_tests
-    │   └── definitions.inc
-    └── tester.py
+├── Merge.class
+├── mergeCommit.class
+├── mergeCommit.java
+├── Merge.java
+├── Repository.class
+├── Repository.java
+├── sentinel
+├── Utils$1.class
+├── Utils.class
+└── Utils.java
 
 ## IDEAL
 
 1. `public static boolean updateBlobArray(Commit updateCommit, List<Blobs> previousBlobArray, List<String> fileNames, String command)`函数中，需要一个tempBlobArray来操作存储变化的新BlobArray，因为直接令tempBlobArray = previousBlobArray的话他们俩指向的是同一块地址，操作tempBlobArray时previousBlobArray指向的内容也变换导致所有commit的BlobArray也随之变换出现问题。
 2. 用shortID查询commitID完成相应的`java gitlet.Main checkout [commit id] -- [file name]`功能会影响速度，Git的解决办法是把Blobs们依据**哈希值**的前两位建立文件夹进行存储，查找时只需算出哈希值就可以快速查找(O(1))。
 3. **2024.6.4**测试很重要，用写好的测试脚本来测试效率较高且方便，是一劳永逸的方法，无需再手动测试，因此学会如何写测试脚本十分重要，与写开发文档的思想是一样的，都是为了更规范与方便高效。
+
+## 总结
+
+- 得出一套解决任务的流程
+  1. 明确要解决的任务需求
+  2. 画出思路的流程图
+  3. 将流程图转化为文字形式，写出1234...步骤
+  4. 写代码
+  5. 测试(集成测试)
+- 尽量运用抽象的思维，可以将多个任务提取出相同的操作，将这个操作抽象成一个函数供其他任务调用。
