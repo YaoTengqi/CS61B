@@ -1,0 +1,6 @@
+Enter # strings to insert into the maps: test test test test test test ytq lxx forever
+Please enter a positive integer: 1234567
+--Stack Overflow -- couldn't add 1234567 strings of length 9999.
+class bstmap.BSTMap: 108.45 sec
+Java's Built-in TreeMap: 107.77 sec
+Java's Built-in HashMap: 113.17 sec

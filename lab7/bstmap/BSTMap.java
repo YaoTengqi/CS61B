@@ -1,6 +1,5 @@
 package bstmap;
 
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -27,19 +26,6 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
             this.leftChild = null;
             this.rightChild = null;
         }
-
-        public void setLeftChild(Node leftChild) {
-            this.leftChild = leftChild;
-        }
-
-        public void setRightChild(Node rightChild) {
-            this.rightChild = rightChild;
-        }
-
-        public K getKey() {
-            return key;
-        }
-
     }
 
     /**
@@ -220,5 +206,13 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         }
         int size = 1 + leftSize + rightSize;
         return size;
+    }
+
+    public void printInOrder() {
+        Set<K> keySet = keySet();
+        for (K key : keySet) {
+            V value = get(key);
+            System.out.println("Key: " + key+" Value: "+ value);
+        }
     }
 }
