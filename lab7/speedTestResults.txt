@@ -4,3 +4,10 @@ Please enter a positive integer: 1234567
 class bstmap.BSTMap: 108.45 sec
 Java's Built-in TreeMap: 107.77 sec
 Java's Built-in HashMap: 113.17 sec
+
+
+Enter # strings to insert into the maps: 20000000
+--Stack Overflow -- couldn't add 20000000 strings of length 100.
+class bstmap.BSTMap: 49.27 sec
+Java's Built-in TreeMap: 45.96 sec
+Java's Built-in HashMap: 24.29 sec
